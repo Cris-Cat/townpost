@@ -1,0 +1,300 @@
+<!-- File: events/templates/events/submit.html -->
+{% extends 'events/base.html' %}
+
+{% block title %}Submit an Event - CityBoard{% endblock %}
+
+{% block content %}
+<!-- CRITICAL FIX: x-data is now on a wrapper div that contains BOTH the form and the modal -->
+<div x-data="photoUploader()">
+
+    <h1>Submit an Event</h1>
+    
+    <!-- Form uses @submit.prevent to stop default submission -->
+    <form method="POST" enctype="multipart/form-data" @submit.prevent="requestSubmit">
+        {% csrf_token %}
+        
+        <!-- Hidden Consent Checkbox -->
+        <div style="display: none;">
+            {{ form.consent_given }}
+        </div>
+
+        <!-- 1. Title -->
+        <p>
+            <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label><br>
+            {{ form.title }}<br>
+            {{ form.title.errors }}
+        </p>
+
+        <!-- 2. Category & Date Toggle -->
+        <div x-data="{ showDateFields: true }">
+            <p>
+                <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label><br>
+                <select name="category" id="id_category" required 
+                        @change="showDateFields = !$event.target.options[$event.target.selectedIndex].text.toLowerCase().includes('notice')">
+                    <option value="" disabled>Select a category</option>
+                    {% for choice in form.category.field.choices %}
+                        {% if choice.0 %}
+                            <option value="{{ choice.0 }}" {% if form.category.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <br>
+                {{ form.category.errors }}
+            </p>
+
+            <div x-show="showDateFields" x-transition>
+                <p>
+                    <label for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label><br>
+                    {{ form.start_date }}<br>
+                    {{ form.start_date.errors }}
+                </p>
+            </div>
+        </div>
+
+        <!-- 3. Description with Live Word Counter -->
+        <div x-data="{ 
+            wordCount: 0, 
+            updateCount(text) { 
+                this.wordCount = text.trim() === '' ? 0 : text.trim().split(/\s+/).length; 
+            } 
+        }">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label><br>
+            <textarea name="description" id="id_description" rows="6" 
+                      placeholder="Tell us about your event... (Max 500 words)"
+                      @input="updateCount($event.target.value)"
+                      style="width: 100%;">{{ form.description.value|default:'' }}</textarea>
+            
+            <div class="word-counter" :class="{ 'over-limit': wordCount > 500 }">
+                <span x-text="wordCount"></span> / 500 words
+            </div>
+            {{ form.description.errors }}
+        </div>
+
+        <!-- 4. Photo Upload -->
+        <div style="margin-top: 20px;">
+            <label>{{ form.images.label }}</label><br>
+            
+            <input type="file" id="id_images" multiple 
+                   accept="image/jpeg, image/png, image/webp"
+                   style="display: none;"
+                   @change="addFiles($event)">
+            
+            <button type="button" @click="$el.previousElementSibling.click()" 
+                    class="btn" style="background: #007bff; margin-bottom: 10px;">
+                <span x-text="files.length === 0 ? 'Select Photos' : 'Add More Photos'"></span>
+            </button>
+            
+            <p style="font-size: 0.9em; color: #666; margin: 5px 0;">
+                Minimum 3 photos, maximum 5 photos
+            </p>
+
+            <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <template x-for="(file, index) in files" :key="index">
+                    <div style="border: 1px solid #ccc; border-radius: 5px; padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; position: relative; background: #fafafa;">
+                        <button type="button" @click="removeFile(index)" 
+                                style="position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; padding: 0; line-height: 1;">
+                            ✕
+                        </button>
+                        <img :src="file.preview" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+                        <div style="font-weight: bold; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; margin-bottom: 2px;" x-text="file.name" :title="file.name"></div>
+                        <div style="font-size: 0.75em; color: #666;" x-text="formatFileSize(file.size)"></div>
+                    </div>
+                </template>
+            </div>
+            
+            <div x-show="photoError" style="color: red; margin-top: 10px;" x-text="photoError"></div>
+            
+            {% if form.non_field_errors %}
+                <div style="color: red; margin-top: 10px;">
+                    <ul>
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 5. Location Toggle -->
+        <div x-data="{ showLocation: false }" style="margin-top: 30px;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                <input type="checkbox" x-model="showLocation" style="width: 18px; height: 18px;">
+                <span style="font-weight: bold;">Add location details (Optional)</span>
+            </label>
+            
+            <fieldset x-show="showLocation" x-transition style="border: 1px solid #ccc; padding: 15px; border-radius: 5px;">
+                <legend style="font-weight: bold; padding: 0 10px;">Location & Links</legend>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label><br>
+                        {{ form.country }}<br>
+                        {{ form.country.errors }}
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label><br>
+                        {{ form.city }}<br>
+                        {{ form.city.errors }}
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 2;">
+                        <label for="{{ form.street_address.id_for_label }}">{{ form.street_address.label }}</label><br>
+                        {{ form.street_address }}<br>
+                        {{ form.street_address.errors }}
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="{{ form.zip_code.id_for_label }}">{{ form.zip_code.label }}</label><br>
+                        {{ form.zip_code }}<br>
+                        {{ form.zip_code.errors }}
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="{{ form.maps_url.id_for_label }}">{{ form.maps_url.label }}</label><br>
+                    {{ form.maps_url }}<br>
+                    {{ form.maps_url.errors }}
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label for="{{ form.event_url.id_for_label }}" style="font-weight: bold;">Link to Event / Tickets (Optional)</label><br>
+                    {{ form.event_url }}<br>
+                    {{ form.event_url.errors }}
+                </div>
+            </fieldset>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="button" @click="requestSubmit()" class="btn" style="margin-top: 30px; width: 100%; font-size: 1.1em;">
+            Submit Event
+        </button>
+    </form>
+
+    <!-- ========================================== -->
+    <!-- CONSENT MODAL POPUP (Now INSIDE the x-data scope!) -->
+    <!-- ========================================== -->
+    <div x-show="showConsentModal" 
+         style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100;"
+         x-transition.opacity
+         x-cloak>
+        
+        <div @click.away="showConsentModal = false" 
+             style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            
+            <h2 style="margin-top: 0; color: #333; border-bottom: 2px solid #f1c40f; padding-bottom: 10px; display: inline-block;">
+                ⚠️ Important: Please Confirm
+            </h2>
+            
+            <p style="line-height: 1.6; color: #555; margin-top: 15px;">
+                By submitting this event, you confirm and acknowledge that:
+            </p>
+            <ul style="line-height: 1.6; color: #555; margin-bottom: 25px; padding-left: 20px;">
+                <li>All information provided will be <strong>publicly available</strong> on CityBoard.</li>
+                <li><strong>No personal or sensitive information</strong> is included in this submission.</li>
+                <li>You <strong>own or have the right to use</strong> all images and content provided, and they do not violate any copyright or privacy laws (e.g., no identifiable faces without permission).</li>
+            </ul>
+            
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="button" @click="showConsentModal = false" 
+                        style="padding: 10px 20px; background: #e0e0e0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    Cancel
+                </button>
+                <button type="button" @click="confirmAndSubmit()" 
+                        style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    I Agree & Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div> <!-- END OF X-DATA WRAPPER -->
+
+<!-- Alpine.js Logic -->
+<script>
+    function photoUploader() {
+        return {
+            files: [],
+            photoError: '',
+            showConsentModal: false,
+            
+            addFiles(event) {
+                const newFiles = Array.from(event.target.files);
+                if (this.files.length + newFiles.length > 5) {
+                    this.photoError = `You can only upload a maximum of 5 photos. You currently have ${this.files.length} photo(s).`;
+                    return;
+                }
+                this.photoError = '';
+                newFiles.forEach(file => {
+                    file.preview = URL.createObjectURL(file);
+                    this.files.push(file);
+                });
+                event.target.value = '';
+            },
+            
+            removeFile(index) {
+                URL.revokeObjectURL(this.files[index].preview);
+                this.files.splice(index, 1);
+                if (this.files.length >= 3) {
+                    this.photoError = '';
+                }
+            },
+            
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+            },
+            
+            requestSubmit() {
+                if (this.files.length < 3) {
+                    this.photoError = `Please upload at least 3 photos. You currently have ${this.files.length} photo(s).`;
+                    return;
+                }
+                this.photoError = '';
+                this.showConsentModal = true; // This will now successfully trigger the modal!
+            },
+            
+            confirmAndSubmit() {
+                const consentCheckbox = document.getElementById('id_consent_given');
+                if (consentCheckbox) {
+                    consentCheckbox.checked = true;
+                }
+                this.showConsentModal = false;
+                
+                const form = document.querySelector('form');
+                const formData = new FormData(form);
+                formData.delete('images');
+                this.files.forEach((file) => {
+                    formData.append('images', file);
+                });
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') }
+                })
+                .then(response => {
+                    if (response.ok && response.redirected) {
+                        window.location.href = response.url;
+                    } else if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('There was an error submitting your form. Please check the requirements and try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('There was an error submitting your form. Please try again.');
+                });
+            }
+        }
+    }
+</script>
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+{% endblock %}

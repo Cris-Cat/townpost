@@ -1,0 +1,25 @@
+<!-- File: events/templates/events/home.html -->
+{% extends 'events/base.html' %}
+
+{% block title %}This Week - CityBoard{% endblock %}
+
+{% block content %}
+    <h1>This Week's Events</h1>
+    
+    {% if events %}
+        <!-- Loop through the approved events passed from the view -->
+        {% for event in events %}
+            <div class="event-card">
+                <h2><a href="{% url 'event_detail' event.slug %}">{{ event.title }}</a></h2>
+                <p><strong>Category:</strong> {{ event.category }}</p>
+                {% if event.start_date %}
+                    <p><strong>Date:</strong> {{ event.start_date }}</p>
+                {% endif %}
+                <p>{{ event.description|truncatewords:20 }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <!-- Edge Case: No approved events yet -->
+        <p>No events posted for this week yet. <a href="{% url 'submit' %}">Be the first to submit one!</a></p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,79 @@
+<!-- File: events/templates/events/event_detail.html -->
+{% extends 'events/base.html' %}
+
+{% block title %}{{ event.title }} - CityBoard{% endblock %}
+
+{% block content %}
+    <h1 style="margin-bottom: 5px;">{{ event.title }}</h1>
+    <p style="color: #666; margin-top: 0;">Posted in {{ event.category }}</p>
+    
+    <hr style="margin: 20px 0;">
+
+    <!-- Event Details Grid -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        
+        <!-- Date & Time -->
+        {% if event.start_date %}
+            <div>
+                <h3 style="margin-bottom: 10px; border-bottom: 2px solid #f1c40f; display: inline-block; padding-bottom: 5px;"> When</h3>
+                <p style="font-size: 1.1em; margin: 5px 0;">{{ event.start_date }}</p>
+                {% if event.start_time %}
+                    <p style="color: #555; margin: 5px 0;">{{ event.start_time }}{% if event.end_time %} - {{ event.end_time }}{% endif %}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- Location & Links -->
+        {% if event.city or event.maps_url or event.event_url %}
+            <div>
+                <h3 style="margin-bottom: 10px; border-bottom: 2px solid #f1c40f; display: inline-block; padding-bottom: 5px;"> Where & Links</h3>
+                
+                {% if event.city %}
+                    <p style="margin: 5px 0;">
+                        <strong>{{ event.city }}</strong>{% if event.country %}, {{ event.country }}{% endif %}
+                    </p>
+                {% endif %}
+                
+                {% if event.street_address %}
+                    <p style="margin: 5px 0; color: #555;">{{ event.street_address }}{% if event.zip_code %}, {{ event.zip_code }}{% endif %}</p>
+                {% endif %}
+
+                <!-- Action Links -->
+                <div style="margin-top: 10px; display: flex; gap: 15px; flex-wrap: wrap;">
+                    {% if event.maps_url %}
+                        <a href="{{ event.maps_url }}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: none; font-weight: bold;">
+                            ️ View on Maps
+                        </a>
+                    {% endif %}
+                    
+                    {% if event.event_url %}
+                        <a href="{{ event.event_url }}" target="_blank" rel="noopener noreferrer" style="color: #007bff; text-decoration: none; font-weight: bold;">
+                            🔗 Event Website / Tickets
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Image Gallery -->
+    {% if event.images.all %}
+        <h3 style="margin-bottom: 15px;">Photos</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            {% for image in event.images.all %}
+                <img src="{{ image.image.url }}" 
+                     alt="{{ image.alt_text }}" 
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 5px; border: 1px solid #ccc;">
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Description -->
+    <h3 style="margin-bottom: 15px;">About this event</h3>
+    <div style="white-space: pre-line; line-height: 1.8; font-size: 1.05em; color: #333;">
+        {{ event.description }}
+    </div>
+
+    <br>
+    <a href="{% url 'home' %}" class="btn" style="background: #333; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">← Back to Home</a>
+{% endblock %}
