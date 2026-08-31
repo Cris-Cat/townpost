@@ -1,0 +1,47 @@
+<!-- File: events/templates/events/partials/sidebar.html -->
+
+<!-- 1. Main Navigation -->
+<div class="nav-section" style="margin-top: 35px;">
+    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>📋 Browse</div>
+    
+    <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+        <span class="nav-icon">📅</span>
+        <span class="nav-text" x-show="!sidebarCollapsed" x-transition>This Week</span>
+    </a>
+    
+    <a href="{% url 'info_board' %}" class="nav-link {% if request.path == '/info/' %}active{% endif %}">
+        <span class="nav-icon">📌</span>
+        <span class="nav-text" x-show="!sidebarCollapsed" x-transition>Notices</span>
+    </a>
+</div>
+
+<!-- 2. Upcoming Weeks -->
+<div class="nav-section">
+    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>️ Upcoming</div>
+    {% for monday, sunday in upcoming_weeks %}
+        <a href="#" class="nav-link">
+            <span class="nav-icon">🗓️</span>
+            <span class="nav-text" x-show="!sidebarCollapsed" x-transition>
+                {{ monday|date:"M j" }} - {{ sunday|date:"j" }}
+            </span>
+        </a>
+    {% endfor %}
+</div>
+
+<!-- 3. Past Events (Archive) -->
+<div class="nav-section">
+    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>🗄️ Past Events</div>
+    
+    {% for month_name, weeks in past_months.items %}
+        <div class="month-group">
+            <div class="month-title" x-show="!sidebarCollapsed" x-transition>{{ month_name }}</div>
+            {% for monday, sunday in weeks %}
+                <a href="#" class="week-link" x-show="!sidebarCollapsed" x-transition>
+                    Week of {{ monday|date:"M j" }}
+                </a>
+            {% endfor %}
+        </div>
+    {% empty %}
+        <p class="nav-text" x-show="!sidebarCollapsed" x-transition style="font-size: 0.85em; color: #9ca3af; padding-left: 36px;">None yet.</p>
+    {% endfor %}
+</div>

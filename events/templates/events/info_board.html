@@ -1,0 +1,30 @@
+<!-- File: events/templates/events/info_board.html -->
+{% extends 'events/base.html' %}
+
+{% block title %}Info Board - CityBoard{% endblock %}
+
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="margin: 0;">📌 Info Board</h1>
+        <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff;">← Back to This Week</a>
+    </div>
+    
+    <p style="color: #666; margin-bottom: 20px;">
+        Ongoing notices, community announcements, and events without a specific date.
+    </p>
+    
+    {% if events %}
+        {% for event in events %}
+            <div class="event-card" style="border-left: 4px solid #f1c40f;">
+                <h2 style="margin-top: 0;"><a href="{% url 'event_detail' event.slug %}" style="text-decoration: none; color: #333;">{{ event.title }}</a></h2>
+                <p style="margin: 5px 0;"><strong>Category:</strong> {{ event.category }}</p>
+                <p style="color: #555;">{{ event.description|truncatewords:25 }}</p>
+                <a href="{% url 'event_detail' event.slug %}" style="color: #007bff; text-decoration: none; font-weight: bold;">Read more →</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 40px; border: 2px dashed #ccc; border-radius: 8px;">
+            <p style="font-size: 1.2em; color: #666;">No ongoing notices at the moment.</p>
+        </div>
+    {% endif %}
+{% endblock %}

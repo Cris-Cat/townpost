@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     # Home page (Root URL)
     path('', views.home_view, name='home'),
+    path('info/', views.info_board_view, name='info_board'), 
     # Submission form
     path('submit/', views.submit_event_view, name='submit'),
     # Event detail page (captures the slug from the URL)

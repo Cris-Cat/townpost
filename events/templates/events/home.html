@@ -4,22 +4,39 @@
 {% block title %}This Week - CityBoard{% endblock %}
 
 {% block content %}
-    <h1>This Week's Events</h1>
+    <!-- Page Header -->
+    <div style="margin-bottom: 25px; border-bottom: 2px solid #f1c40f; padding-bottom: 10px;">
+        <h1 style="margin: 0; font-size: 1.8em;">📅 This Week's Events</h1>
+        <p style="color: #666; margin: 5px 0 0 0;">
+            Showing events from <strong>{{ week_start|date:"F j" }}</strong> to <strong>{{ week_end|date:"F j, Y" }}</strong>
+        </p>
+    </div>
     
+    <!-- Event List -->
     {% if events %}
-        <!-- Loop through the approved events passed from the view -->
         {% for event in events %}
             <div class="event-card">
-                <h2><a href="{% url 'event_detail' event.slug %}">{{ event.title }}</a></h2>
-                <p><strong>Category:</strong> {{ event.category }}</p>
+                <h2 style="margin-top: 0;"><a href="{% url 'event_detail' event.slug %}">{{ event.title }}</a></h2>
+                <p style="margin: 5px 0; color: #555;"><strong>Category:</strong> {{ event.category }}</p>
+                
                 {% if event.start_date %}
-                    <p><strong>Date:</strong> {{ event.start_date }}</p>
+                    <p style="margin: 5px 0; color: #555;"><strong>Date:</strong> {{ event.start_date|date:"l, F j, Y" }}</p>
                 {% endif %}
-                <p>{{ event.description|truncatewords:20 }}</p>
+                
+                {% if event.city %}
+                    <p style="margin: 5px 0; color: #555;"><strong>Location:</strong> {{ event.city }}</p>
+                {% endif %}
+                
+                <p style="color: #333; margin-top: 15px;">{{ event.description|truncatewords:30 }}</p>
+                
+                <a href="{% url 'event_detail' event.slug %}" class="btn" style="margin-top: 10px;">Read more →</a>
             </div>
         {% endfor %}
     {% else %}
-        <!-- Edge Case: No approved events yet -->
-        <p>No events posted for this week yet. <a href="{% url 'submit' %}">Be the first to submit one!</a></p>
+        <!-- Empty State -->
+        <div style="text-align: center; padding: 60px 20px; border: 2px dashed #e5e7eb; border-radius: 8px; background: #f9fafb;">
+            <p style="font-size: 1.2em; color: #6b7280; margin-bottom: 20px;">No events posted for this week yet.</p>
+            <a href="{% url 'submit' %}" class="btn btn-yellow">Be the first to submit one!</a>
+        </div>
     {% endif %}
 {% endblock %}
