@@ -45,9 +45,14 @@
             </div>
 
             <!-- 4. Action Buttons -->
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: flex-end; padding-bottom: 8px;">
                 <button type="submit" class="btn" style="background: #333; color: #fff;">Apply</button>
                 <a href="{% url 'home' %}" class="btn" style="background: #e5e7eb; color: #333; text-align: center;">Clear</a>
+                
+                <!-- NEW: Show All Button -->
+                <a href="?view=all" class="btn" style="background: #f1c40f; color: #000; font-weight: bold;">
+                    🌟 Show All (Recent 20)
+                </a>
             </div>
         </form>
     </div>

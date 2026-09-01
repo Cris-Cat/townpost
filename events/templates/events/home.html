@@ -1,27 +1,44 @@
 <!-- File: events/templates/events/home.html -->
 {% extends 'events/base.html' %}
 
-{% block title %}This Week - CityBoard{% endblock %}
+{% block title %}
+    {% if is_show_all %}Recent Events{% else %}This Week{% endif %} - CityBoard
+{% endblock %}
 
+<!-- 1. INJECT FILTER BAR INTO THE NEW BANNER AREA -->
+{% block top_banner %}
+    {% include 'events/partials/filter_bar.html' %}
+{% endblock %}
+
+<!-- 2. MAIN CONTENT (Posts only) -->
 {% block content %}
+
     <!-- Page Header -->
     <div style="margin-bottom: 25px; border-bottom: 2px solid #f1c40f; padding-bottom: 10px;">
-            {% include 'events/partials/filter_bar.html' %}
-        <h1 style="margin: 0; font-size: 1.8em;">📅 This Week's Events</h1>
-        <p style="color: #666; margin: 5px 0 0 0;">
-            Showing events from <strong>{{ week_start|date:"F j" }}</strong> to <strong>{{ week_end|date:"F j, Y" }}</strong>
-        </p>
+        {% if is_show_all %}
+            <h1 style="margin: 0; font-size: 1.8em;">🌟 Recent Events</h1>
+            <p style="color: #666; margin: 5px 0 0 0;">Showing the 20 most recent approved posts.</p>
+        {% else %}
+            <h1 style="margin: 0; font-size: 1.8em;">📅 This Week's Events</h1>
+            <p style="color: #666; margin: 5px 0 0 0;">
+                Showing events from <strong>{{ week_start|date:"F j" }}</strong> to <strong>{{ week_end|date:"F j, Y" }}</strong>
+            </p>
+        {% endif %}
     </div>
-    
+
     <!-- Event List -->
     {% if events %}
         {% for event in events %}
             <div class="event-card">
-                <h2 style="margin-top: 0;"><a href="{% url 'event_detail' event.slug %}">{{ event.title }}</a></h2>
+                <h2 style="margin-top: 0;">
+                    <a href="{% url 'event_detail' event.slug %}">{{ event.title }}</a>
+                </h2>
                 <p style="margin: 5px 0; color: #555;"><strong>Category:</strong> {{ event.category }}</p>
                 
                 {% if event.start_date %}
                     <p style="margin: 5px 0; color: #555;"><strong>Date:</strong> {{ event.start_date|date:"l, F j, Y" }}</p>
+                {% else %}
+                    <p style="margin: 5px 0; color: #555;"><strong>Type:</strong> Ongoing Notice</p>
                 {% endif %}
                 
                 {% if event.city %}
@@ -36,8 +53,9 @@
     {% else %}
         <!-- Empty State -->
         <div style="text-align: center; padding: 60px 20px; border: 2px dashed #e5e7eb; border-radius: 8px; background: #f9fafb;">
-            <p style="font-size: 1.2em; color: #6b7280; margin-bottom: 20px;">No events posted for this week yet.</p>
+            <p style="font-size: 1.2em; color: #6b7280; margin-bottom: 20px;">No events found for this view.</p>
             <a href="{% url 'submit' %}" class="btn btn-yellow">Be the first to submit one!</a>
         </div>
     {% endif %}
+
 {% endblock %}

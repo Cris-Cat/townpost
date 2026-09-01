@@ -5,34 +5,62 @@ from django.utils import timezone
 from .models import Event, EventImage
 from .forms import EventForm
 from .utils import process_and_strip_exif, get_week_range  # <-- Added get_week_range
+from .models import Event, EventImage, Category 
+
 
 def home_view(request):
     """
-    Home Page View (Weekly Board)
-    -----------------------------
-    Purpose: Displays ONLY approved events happening in the CURRENT week.
-    Technical Points:
-    - Gets the Monday and Sunday of the current week.
-    - Filters events where start_date falls between Monday and Sunday (inclusive).
-    - Excludes events with no start_date (those belong on the Info Board).
-    - Orders by start_date, then by title.
+    Home Page View (Weekly Board with Filters & Show All)
+    -----------------------------------------------------
     """
-    monday, sunday = get_week_range()
+    # 1. Check if user clicked "Show All"
+    show_all = request.GET.get('view') == 'all'
     
-    # Filter: approved, has a start date, and falls within this week's range
-    events = Event.objects.filter(
-        status='approved',
-        start_date__isnull=False,
-        start_date__gte=monday,
-        start_date__lte=sunday
-    ).order_by('start_date', 'title')
+    if show_all:
+        # If Show All is active, get the 20 most recent approved events.
+        # We remove the date filter so it includes both Dated events and Notices.
+        events = Event.objects.filter(status='approved').order_by('-created_at')[:20]
+        
+    else:
+        # 2. Standard Logic (This Week + Filters)
+        monday, sunday = get_week_range()
+        
+        # Base queryset: approved and has a start date
+        events = Event.objects.filter(
+            status='approved',
+            start_date__isnull=False
+        )
+        
+        # Apply Date Filters
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        
+        if start_date and end_date:
+            events = events.filter(start_date__gte=start_date, start_date__lte=end_date)
+        else:
+            # Default to current week if no custom dates
+            events = events.filter(start_date__gte=monday, start_date__lte=sunday)
+            
+        # Apply Category Filter
+        category_slug = request.GET.get('category')
+        if category_slug:
+            events = events.filter(category__slug=category_slug)
+            
+        # Order by date
+        events = events.order_by('start_date', 'title')
+
+    # 3. Get categories for the dropdown
+    categories = Category.objects.all().order_by('name')
     
     return render(request, 'events/home.html', {
         'events': events,
-        'week_start': monday,
-        'week_end': sunday
+        'categories': categories,
+        'week_start': get_week_range()[0],
+        'week_end': get_week_range()[1],
+        'is_show_all': show_all 
     })
 
+# ... (keep submit_event_view and event_detail_view exactly as they are) ...
 
 def info_board_view(request):
     """

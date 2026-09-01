@@ -4,11 +4,19 @@
 <div class="nav-section" style="margin-top: 35px;">
     <div class="nav-title" x-show="!sidebarCollapsed" x-transition>📋 Browse</div>
     
-    <a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+    <!-- "This Week" resets the filters -->
+    <a href="{% url 'home' %}" class="nav-link {% if not request.GET.start_date and not request.GET.view %}active{% endif %}">
         <span class="nav-icon">📅</span>
         <span class="nav-text" x-show="!sidebarCollapsed" x-transition>This Week</span>
     </a>
     
+    <!-- "Show All" shows recent 20 -->
+    <a href="?view=all" class="nav-link {% if request.GET.view == 'all' %}active{% endif %}">
+        <span class="nav-icon">↕️</span>
+        <span class="nav-text" x-show="!sidebarCollapsed" x-transition>Show All</span>
+    </a>
+
+    <!-- "Notices" shows dateless posts -->
     <a href="{% url 'info_board' %}" class="nav-link {% if request.path == '/info/' %}active{% endif %}">
         <span class="nav-icon">📌</span>
         <span class="nav-text" x-show="!sidebarCollapsed" x-transition>Notices</span>
@@ -17,9 +25,11 @@
 
 <!-- 2. Upcoming Weeks -->
 <div class="nav-section">
-    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>️ Upcoming</div>
+    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>🗓️ Upcoming</div>
     {% for monday, sunday in upcoming_weeks %}
-        <a href="#" class="nav-link">
+        <!-- Link sends the exact start and end date of this week to the filter -->
+        <a href="?start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}" 
+           class="nav-link {% if request.GET.start_date == monday|date:'Y-m-d' %}active{% endif %}">
             <span class="nav-icon">🗓️</span>
             <span class="nav-text" x-show="!sidebarCollapsed" x-transition>
                 {{ monday|date:"M j" }} - {{ sunday|date:"j" }}
@@ -34,9 +44,14 @@
     
     {% for month_name, weeks in past_months.items %}
         <div class="month-group">
+            <!-- Month Title (Non-clickable header for grouping) -->
             <div class="month-title" x-show="!sidebarCollapsed" x-transition>{{ month_name }}</div>
+            
+            <!-- Weeks inside that month -->
             {% for monday, sunday in weeks %}
-                <a href="#" class="week-link" x-show="!sidebarCollapsed" x-transition>
+                <!-- Link sends the exact start and end date of this past week -->
+                <a href="?start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}" 
+                   class="week-link" x-show="!sidebarCollapsed" x-transition>
                     Week of {{ monday|date:"M j" }}
                 </a>
             {% endfor %}
