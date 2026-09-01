@@ -1,0 +1,57 @@
+<!-- File: events/templates/events/success.html -->
+{% extends 'events/base.html' %}
+
+{% block title %}Submission Successful - CityBoard{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; padding: 40px 20px;">
+        <h1 style="color: #10b981; margin-bottom: 10px;">✅ Event Submitted Successfully!</h1>
+        <p style="color: #666; font-size: 1.1em; max-width: 600px; margin: 0 auto 30px auto;">
+            Your event has been sent to our moderators. It will appear on the board once approved.
+        </p>
+
+        <!-- Secret Edit Link Section -->
+        <div style="background: #fffbeb; border: 2px solid #f59e0b; border-radius: 8px; padding: 25px; max-width: 600px; margin: 0 auto; text-align: left;">
+            <h2 style="margin-top: 0; color: #92400e; font-size: 1.2em;">⚠️ IMPORTANT: Save Your Secret Edit Link</h2>
+            <p style="color: #78350f; margin-bottom: 15px;">
+                This is your <strong>only</strong> way to edit or delete this event later. 
+                <strong>This link will not be shown again.</strong> Please copy and save it now.
+            </p>
+            
+            <!-- Alpine.js component to handle copying the link -->
+            <div x-data="{ 
+                copied: false, 
+                link: '{{ request.scheme }}://{{ request.get_host }}/edit/{{ event.secret_edit_token }}/',
+                copyLink() {
+                    navigator.clipboard.writeText(this.link);
+                    this.copied = true;
+                    setTimeout(() => this.copied = false, 3000);
+                }
+            }">
+                <!-- The Link Display -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" :value="link" readonly 
+                           style="flex: 1; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; font-family: monospace; font-size: 0.9em; color: #333;">
+                    
+                    <!-- Copy Button -->
+                    <button @click="copyLink()" 
+                            class="btn" 
+                            style="background: #333; color: #fff; white-space: nowrap;">
+                        <span x-show="!copied">📋 Copy Link</span>
+                        <span x-show="copied">✅ Copied!</span>
+                    </button>
+                </div>
+            </div>
+            
+            <p style="font-size: 0.85em; color: #92400e; margin: 0;">
+                Note: If you lose this link, you will not be able to edit this event. Only the admin can modify it afterwards.
+            </p>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff; padding: 12px 24px; font-size: 1em;">
+                Return to Home Page
+            </a>
+        </div>
+    </div>
+{% endblock %}

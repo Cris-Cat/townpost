@@ -1,0 +1,166 @@
+{% extends 'events/base.html' %}
+{% block title %}Edit Event - CityBoard{% endblock %}
+
+{% block content %}
+<div x-data="editFormHandler()">
+
+    {{ existing_images_data|json_script:"existing-images-data" }}
+
+    <h1>Edit Your Event</h1>
+    <p style="color: #666;">Changes will be reviewed by an admin before going live.</p>
+    
+    <form id="edit_form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="deleted_image_ids" x-model="deletedImageIdsStr">
+
+        <p><label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label><br>{{ form.title }}<br>{{ form.title.errors }}</p>
+        <p>
+            <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label><br>
+            <select name="category" id="id_category" required>
+                {% for choice in form.category.field.choices %}
+                    {% if choice.0 %}<option value="{{ choice.0 }}" {% if form.category.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>{% endif %}
+                {% endfor %}
+            </select><br>{{ form.category.errors }}
+        </p>
+        <p><label for="{{ form.start_date.id_for_label }}">{{ form.start_date.label }}</label><br>{{ form.start_date }}<br>{{ form.start_date.errors }}</p>
+        <p>
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label><br>
+            <textarea name="description" id="id_description" rows="6" style="width: 100%;">{{ form.description.value|default:'' }}</textarea>
+            {{ form.description.errors }}
+        </p>
+
+        <div style="margin-top: 20px;">
+            <label>{{ form.images.label }}</label><br>
+            <input type="file" id="id_images" multiple accept="image/jpeg, image/png, image/webp" style="display: none;" @change="addFiles($event)">
+            <button type="button" @click="$el.previousElementSibling.click()" class="btn" style="background: #007bff; margin-bottom: 10px;">Add/Replace Photos</button>
+            <p style="font-size: 0.9em; color: #666;">Click ✕ to remove. Min 1 photo required.</p>
+
+            <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <template x-for="(file, index) in files" :key="file.isExisting ? file.id : index">
+                    <div style="border: 1px solid #ccc; border-radius: 5px; padding: 10px; text-align: center; position: relative; background: #fafafa;">
+                        <button type="button" @click="removeFile(index)" style="position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer;">✕</button>
+                        <img :src="file.preview" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; margin-bottom: 8px;">
+                        <div style="font-size: 0.9em;" x-text="file.name"></div>
+                        <div style="font-size: 0.75em; color: #666;" x-text="file.isExisting ? 'Current' : 'New'"></div>
+                    </div>
+                </template>
+            </div>
+            <div x-show="photoError" style="color: red; margin-top: 10px;" x-text="photoError"></div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <p><label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label><br>{{ form.country }}</p>
+            <p><label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label><br>{{ form.city }}</p>
+            <p><label for="{{ form.maps_url.id_for_label }}">{{ form.maps_url.label }}</label><br>{{ form.maps_url }}</p>
+            <p><label for="{{ form.event_url.id_for_label }}">{{ form.event_url.label }}</label><br>{{ form.event_url }}</p>
+        </div>
+
+        <input type="checkbox" name="consent_given" id="id_consent_given" style="display: none;" required>
+        <button type="button" @click="openModal()" class="btn" style="margin-top: 30px; width: 100%; font-size: 1.1em;">Submit Changes</button>
+    </form>
+
+    <!-- CONSENT MODAL -->
+    <div x-show="showConsentModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100;" x-cloak>
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
+            <h2 style="margin-top: 0;">⚠️ Confirm Changes</h2>
+            <p>By saving, you confirm these changes comply with our guidelines. The event will return to "Pending" status.</p>
+            <div style="display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px;">
+                <button type="button" @click="showConsentModal = false" style="padding: 10px 20px; background: #e0e0e0; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                <button type="button" @click="submitForm()" style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">I Agree & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div x-show="showSuccessModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100;" x-cloak>
+        <div style="background: white; padding: 40px; border-radius: 8px; max-width: 450px; width: 90%; text-align: center;">
+            <div style="font-size: 4em; margin-bottom: 15px;">✅</div>
+            <h2 style="margin-top: 0; color: #10b981;">Changes Submitted!</h2>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 25px;">
+                Your changes have been submitted for review. An admin will approve them shortly.
+            </p>
+            <button type="button" @click="goToHome()" style="padding: 12px 30px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1em;">
+                OK
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function editFormHandler() {
+        const existingDataEl = document.getElementById('existing-images-data');
+        const initialFiles = existingDataEl ? JSON.parse(existingDataEl.textContent) : [];
+        
+        return {
+            files: initialFiles,
+            deletedImageIds: [],
+            get deletedImageIdsStr() { return this.deletedImageIds.join(','); },
+            photoError: '',
+            showConsentModal: false,
+            showSuccessModal: false,
+            
+            addFiles(event) {
+                Array.from(event.target.files).forEach(file => {
+                    file.preview = URL.createObjectURL(file);
+                    file.isExisting = false;
+                    this.files.push(file);
+                });
+                event.target.value = '';
+            },
+            
+            removeFile(index) {
+                const file = this.files[index];
+                if (file.isExisting) this.deletedImageIds.push(file.id);
+                else URL.revokeObjectURL(file.preview);
+                this.files.splice(index, 1);
+            },
+            
+            openModal() {
+                if (this.files.length < 1) {
+                    this.photoError = "You must have at least 1 photo.";
+                    return;
+                }
+                this.photoError = '';
+                this.showConsentModal = true;
+            },
+            
+            submitForm() {
+                document.getElementById('id_consent_given').checked = true;
+                
+                const form = document.getElementById('edit_form');
+                const formData = new FormData(form);
+                formData.delete('images');
+                
+                this.files.forEach(file => {
+                    if (!file.isExisting) formData.append('images', file);
+                });
+                
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.showConsentModal = false;
+                        this.showSuccessModal = true;
+                    } else {
+                        alert('Error saving changes. Please try again.');
+                    }
+                })
+                .catch(err => { 
+                    console.error(err); 
+                    alert('Error saving changes.'); 
+                });
+            },
+            
+            goToHome() {
+                window.location.href = '/';
+            }
+        }
+    }
+</script>
+<style>[x-cloak] { display: none !important; }</style>
+{% endblock %}

@@ -1,0 +1,18 @@
+<!-- File: events/templates/events/event_unavailable.html -->
+{% extends 'events/base.html' %}
+
+{% block title %}Event Unavailable - CityBoard{% endblock %}
+
+{% block content %}
+    <div style="text-align: center; padding: 60px 20px;">
+        <h1 style="color: #ef4444; margin-bottom: 20px; font-size: 2em;">🚫 Event Unavailable</h1>
+        
+        <p style="color: #6b7280; font-size: 1.1em; max-width: 500px; margin: 0 auto 30px auto; line-height: 1.6;">
+            We're sorry, but this event is no longer available. It may have been removed by the owner, or it did not meet our community guidelines and was rejected by our moderators.
+        </p>
+        
+        <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff; padding: 12px 24px; font-size: 1em; border-radius: 6px; text-decoration: none;">
+            ← Return to Home Page
+        </a>
+    </div>
+{% endblock %}

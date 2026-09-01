@@ -103,6 +103,11 @@ class Event(models.Model):
     title = models.CharField(max_length=150)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     description = models.TextField(help_text="Max 500 words")
+    
+    pending_title = models.CharField(max_length=200, blank=True, default="")
+    pending_description = models.TextField(blank=True, default="")
+    pending_start_date = models.DateField(blank=True, null=True)
+    
     # PROTECT prevents deleting a Category if it has Events attached to it
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='events')
     
@@ -181,8 +186,13 @@ class EventImage(models.Model):
     order = models.PositiveIntegerField(default=1, help_text="Display order (1-5)")
     alt_text = models.CharField(max_length=100, blank=True, default="", help_text="For accessibility")
 
+    is_approved = models.BooleanField(default=False, help_text="Visible to public only when approved by admin.")
+
     class Meta:
         ordering = ['order']
 
     def __str__(self):
         return f"Image for {self.event.title} (Order: {self.order})"
+
+# File: events/models.py
+

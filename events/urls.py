@@ -3,13 +3,14 @@
 from django.urls import path
 from . import views
 
-# App-level URL patterns
 urlpatterns = [
-    # Home page (Root URL)
     path('', views.home_view, name='home'),
-    path('info/', views.info_board_view, name='info_board'), 
-    # Submission form
+    path('info/', views.info_board_view, name='info_board'),
     path('submit/', views.submit_event_view, name='submit'),
-    # Event detail page (captures the slug from the URL)
+    path('submit/success/<str:token>/', views.submit_success_view, name='submit_success'),
+    
+    # --- ADD THIS LINE ---
+    path('edit/<str:token>/', views.secret_edit_view, name='secret_edit'),
+    
     path('event/<slug:slug>/', views.event_detail_view, name='event_detail'),
 ]

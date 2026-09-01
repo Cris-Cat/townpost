@@ -89,15 +89,26 @@ class EventForm(forms.ModelForm):
                 raise ValidationError(f"Description must be 500 words or less. You entered {word_count} words.")
         return description
 
+
+
+# File: events/forms.py
+
     def clean_images(self):
         """
-        Validates the uploaded images for count, file type, and file size.
+        Validates the uploaded images.
+        Edge Case: In Edit mode, if uploading new photos, minimum is 1.
         """
-        # Get the list of files from cleaned_data (populated by our custom MultipleFileField)
-        images = self.cleaned_data.get('images') or []
+        images = self.files.getlist('images')
         
-        if len(images) < 3:
-            raise ValidationError("Please upload at least 3 photos.")
+        # If no new images are provided, skip validation (they might just be editing text)
+        if not images:
+            return images
+            
+        is_edit = self.instance.pk is not None
+        min_photos = 1 if is_edit else 3
+        
+        if len(images) < min_photos:
+            raise ValidationError(f"Please upload at least {min_photos} photos.")
         if len(images) > 5:
             raise ValidationError("You can upload a maximum of 5 photos.")
             

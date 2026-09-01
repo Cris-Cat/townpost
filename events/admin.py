@@ -52,7 +52,11 @@ class CityAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'emoji')
     prepopulated_fields = {'slug': ('name',)}
+    
 
+# File: events/admin.py
+
+# File: events/admin.py
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
@@ -62,9 +66,31 @@ class EventAdmin(admin.ModelAdmin):
     readonly_fields = ('slug', 'secret_edit_token', 'created_at', 'updated_at')
     inlines = [EventImageInline]
     
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        
+        # If the admin sets the event to 'approved', apply the pending changes
+        if obj.status == 'approved':
+            if obj.pending_title:
+                obj.title = obj.pending_title
+                obj.pending_title = "" # Clear the pending field
+            if obj.pending_description:
+                obj.description = obj.pending_description
+                obj.pending_description = "" # Clear the pending field
+            if obj.pending_start_date:
+                obj.start_date = obj.pending_start_date
+                obj.pending_start_date = None # Clear the pending field
+            obj.save() # Save the newly applied public fields
+            
+            # Also approve the images
+            obj.images.update(is_approved=True)
+            
     @admin.action(description="Mark selected events as approved")
     def make_approved(self, request, queryset):
         updated_count = queryset.update(status='approved')
-        self.message_user(request, f'{updated_count} event(s) successfully approved.')
+        # Also approve the images for these events
+        for event in queryset:
+            event.images.update(is_approved=True)
+        self.message_user(request, f'{updated_count} event(s) and their images successfully approved.')
         
     actions = [make_approved]
