@@ -1,0 +1,54 @@
+<!-- File: events/templates/events/partials/filter_bar.html -->
+
+<div x-data="{ filterOpen: false }">
+    
+    <!-- Filter Toggle Button -->
+    <div style="margin-bottom: 20px;">
+        <button type="button" @click="filterOpen = !filterOpen" 
+                class="btn" 
+                style="background: #f3f4f6; color: #333; border: 1px solid #d1d5db; display: flex; align-items: center; gap: 8px;">
+            <span>🔍 Filter</span>
+            <span x-show="!filterOpen">▼</span>
+            <span x-show="filterOpen">▲</span>
+        </button>
+    </div>
+
+    <!-- Filter Form (Hidden by default) -->
+    <div x-show="filterOpen" x-transition style="background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 25px;">
+        <form method="GET" action="{% url 'home' %}" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; width: 100%;">
+            
+            <!-- 1. Category Filter -->
+            <div style="flex: 1; min-width: 150px;">
+                <label for="filter_category" style="display: block; font-size: 0.85em; font-weight: bold; color: #4b5563; margin-bottom: 5px;">Category</label>
+                <select name="category" id="filter_category" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9em;">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if request.GET.category == cat.slug %}selected{% endif %}>
+                            {{ cat.emoji }} {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- 2. Start Date Filter -->
+            <div style="flex: 1; min-width: 140px;">
+                <label for="filter_start_date" style="display: block; font-size: 0.85em; font-weight: bold; color: #4b5563; margin-bottom: 5px;">From Date</label>
+                <input type="date" name="start_date" id="filter_start_date" value="{{ request.GET.start_date }}" 
+                       style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9em;">
+            </div>
+
+            <!-- 3. End Date Filter -->
+            <div style="flex: 1; min-width: 140px;">
+                <label for="filter_end_date" style="display: block; font-size: 0.85em; font-weight: bold; color: #4b5563; margin-bottom: 5px;">To Date</label>
+                <input type="date" name="end_date" id="filter_end_date" value="{{ request.GET.end_date }}" 
+                       style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9em;">
+            </div>
+
+            <!-- 4. Action Buttons -->
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn" style="background: #333; color: #fff;">Apply</button>
+                <a href="{% url 'home' %}" class="btn" style="background: #e5e7eb; color: #333; text-align: center;">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>

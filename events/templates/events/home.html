@@ -6,6 +6,7 @@
 {% block content %}
     <!-- Page Header -->
     <div style="margin-bottom: 25px; border-bottom: 2px solid #f1c40f; padding-bottom: 10px;">
+            {% include 'events/partials/filter_bar.html' %}
         <h1 style="margin: 0; font-size: 1.8em;">📅 This Week's Events</h1>
         <p style="color: #666; margin: 5px 0 0 0;">
             Showing events from <strong>{{ week_start|date:"F j" }}</strong> to <strong>{{ week_end|date:"F j, Y" }}</strong>
