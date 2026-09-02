@@ -3,6 +3,8 @@
 import secrets
 from django.db import models
 from django.utils.text import slugify
+from datetime import timedelta
+from django.utils import timezone
 
 class Category(models.Model):
     """
@@ -130,6 +132,10 @@ class Event(models.Model):
     secret_edit_token = models.CharField(max_length=64, unique=True, blank=True, null=True)
     consent_given = models.BooleanField(default=False)
     
+    
+    edit_count = models.PositiveIntegerField(default=0, help_text="Number of times this post has been edited")
+    edit_token_expires_at = models.DateTimeField(blank=True, null=True, help_text="Edit link expires 7 days after creation")
+
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -149,6 +155,7 @@ class Event(models.Model):
         if not self.pk and not self.secret_edit_token:
             # token_urlsafe(32) creates a highly secure, URL-safe 43-character string
             self.secret_edit_token = secrets.token_urlsafe(32)
+            self.edit_token_expires_at = timezone.now() + timedelta(days=7)
             
         super().save(*args, **kwargs)
 

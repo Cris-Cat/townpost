@@ -36,20 +36,33 @@
                     <!-- Copy Button -->
                     <button @click="copyLink()" 
                             class="btn" 
-                            style="background: #333; color: #fff; white-space: nowrap;">
+                            style="background: #333; color: #fff; white-space: nowrap; border: none; cursor: pointer; padding: 10px 15px; border-radius: 6px;">
                         <span x-show="!copied">📋 Copy Link</span>
                         <span x-show="copied">✅ Copied!</span>
                     </button>
                 </div>
             </div>
+
+            <!-- NEW: Expiry and Usage Info -->
+            <div style="background: #f3f4f6; border-radius: 6px; padding: 15px; margin-top: 15px; font-size: 0.95em; color: #374151;">
+                <p style="margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px;">
+                    ⏰ <strong>Link expires on:</strong> {{ event.edit_token_expires_at|date:"F d, Y \a\t g:i A" }}
+                </p>
+                <p style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    📝 <strong>Edits remaining:</strong> 
+                    <span style="background: {% if remaining_edits > 2 %}#d1fae5{% elif remaining_edits > 0 %}#fef3c7{% else %}#fee2e2{% endif %}; color: {% if remaining_edits > 2 %}#065f46{% elif remaining_edits > 0 %}#92400e{% else %}#991b1b{% endif %}; padding: 2px 8px; border-radius: 4px; font-weight: bold;">
+                        {{ remaining_edits }} out of 5
+                    </span>
+                </p>
+            </div>
             
-            <p style="font-size: 0.85em; color: #92400e; margin: 0;">
-                Note: If you lose this link, you will not be able to edit this event. Only the admin can modify it afterwards.
+            <p style="font-size: 0.85em; color: #92400e; margin-top: 15px; margin-bottom: 0; line-height: 1.5;">
+                Note: If you lose this link or it expires, you will not be able to edit this event. Only the admin can modify it afterwards.
             </p>
         </div>
 
         <div style="margin-top: 40px;">
-            <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff; padding: 12px 24px; font-size: 1em;">
+            <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff; padding: 12px 24px; font-size: 1em; text-decoration: none; border-radius: 6px;">
                 Return to Home Page
             </a>
         </div>

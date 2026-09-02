@@ -181,8 +181,7 @@
     </form>
 
     <!-- ========================================== -->
-    <!-- CONSENT MODAL POPUP (Now INSIDE the x-data scope!) -->
-    <!-- ========================================== -->
+    <!-- CONSENT MODAL POPUP -->
     <div x-show="showConsentModal" 
          style="position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 100;"
          x-transition.opacity
@@ -202,6 +201,7 @@
                 <li>All information provided will be <strong>publicly available</strong> on CityBoard.</li>
                 <li><strong>No personal or sensitive information</strong> is included in this submission.</li>
                 <li>You <strong>own or have the right to use</strong> all images and content provided, and they do not violate any copyright or privacy laws (e.g., no identifiable faces without permission).</li>
+                <li>You agree to our <a href="{% url 'terms_of_service' %}" target="_blank" style="color: #007bff; text-decoration: underline;">Terms of Service</a> and <a href="{% url 'privacy_policy' %}" target="_blank" style="color: #007bff; text-decoration: underline;">Privacy Policy</a>.</li>
             </ul>
             
             <div style="display: flex; gap: 15px; justify-content: flex-end;">
@@ -209,7 +209,6 @@
                         style="padding: 10px 20px; background: #e0e0e0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                     Cancel
                 </button>
-                
                 
                 <button type="button" @click="confirmAndSubmit()" 
                         style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">

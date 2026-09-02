@@ -10,6 +10,7 @@ from altcha import ChallengeOptionsV1, create_challenge_v1
 from datetime import datetime, timedelta
 from altcha import verify_solution
 from django.conf import settings
+from django.utils import timezone
 
 
 def home_view(request):
@@ -101,8 +102,15 @@ def submit_success_view(request, token):
         event = Event.objects.get(secret_edit_token=token)
     except Event.DoesNotExist:
         return redirect('home')
-    return render(request, 'events/success.html', {'event': event})
-
+    
+    # Calculate remaining edits (Max 5)
+    remaining_edits = 5 - event.edit_count
+    
+    return render(request, 'events/success.html', {
+        'event': event,
+        'remaining_edits': remaining_edits
+    })
+    
 
 
 def secret_edit_view(request, token):
@@ -110,7 +118,19 @@ def secret_edit_view(request, token):
         event = Event.objects.get(secret_edit_token=token)
     except Event.DoesNotExist:
         return redirect('home')
-        
+
+    if event.edit_token_expires_at and timezone.now() > event.edit_token_expires_at:
+        return render(request, 'events/edit_unavailable.html', {
+            'reason': 'expired',
+            'event': event
+        })
+    
+    # --- CHECK 2: Has the edit limit been reached? ---
+    if event.edit_count >= 5:
+        return render(request, 'events/edit_unavailable.html', {
+            'reason': 'limit_reached',
+            'event': event
+        })    
     if event.status in ['rejected', 'archived']:
         return render(request, 'events/edit_denied.html')
 
@@ -145,11 +165,13 @@ def secret_edit_view(request, token):
             
            
             # Write directly to DB, bypassing all signals/hooks
+            # Write directly to DB, bypassing all signals/hooks
             Event.objects.filter(pk=event.pk).update(
                 pending_title=event.pending_title,
                 pending_description=event.pending_description,
                 pending_start_date=event.pending_start_date,
-                status=event.status
+                status=event.status,
+                edit_count=event.edit_count + 1  # Increment edit count
             )
             
             print("Event saved successfully via update()!")

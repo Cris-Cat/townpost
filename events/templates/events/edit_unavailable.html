@@ -1,0 +1,33 @@
+{% extends 'events/base.html' %}
+
+{% block title %}Edit Unavailable - CityBoard{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 60px 20px; max-width: 600px; margin: 0 auto;">
+    
+    {% if reason == 'expired' %}
+        <div style="font-size: 4em; margin-bottom: 20px;">⏰</div>
+        <h1 style="color: #ef4444; margin-bottom: 20px;">Edit Link Expired</h1>
+        <p style="color: #6b7280; font-size: 1.1em; line-height: 1.6; margin-bottom: 30px;">
+            This edit link has expired. Edit links are valid for <strong>7 days</strong> from the date of submission.
+        </p>
+        <p style="color: #6b7280; font-size: 0.95em; line-height: 1.6; margin-bottom: 30px;">
+            If you need to make changes to your event, please submit a new event or contact the admin for assistance.
+        </p>
+        
+    {% elif reason == 'limit_reached' %}
+        <div style="font-size: 4em; margin-bottom: 20px;">🔒</div>
+        <h1 style="color: #ef4444; margin-bottom: 20px;">Edit Limit Reached</h1>
+        <p style="color: #6b7280; font-size: 1.1em; line-height: 1.6; margin-bottom: 30px;">
+            This edit link has reached its maximum usage limit of <strong>5 edits</strong>.
+        </p>
+        <p style="color: #6b7280; font-size: 0.95em; line-height: 1.6; margin-bottom: 30px;">
+            If you need to make further changes to your event, please submit a new event or contact the admin for assistance.
+        </p>
+    {% endif %}
+    
+    <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff; padding: 12px 24px; font-size: 1em; border-radius: 6px; text-decoration: none;">
+        ← Return to Home Page
+    </a>
+</div>
+{% endblock %}
