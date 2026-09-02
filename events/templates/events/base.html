@@ -133,13 +133,17 @@
 <body x-data="{ mobileMenuOpen: false, sidebarCollapsed: false }">
 
     <!-- SLIM TOP BAR -->
-    <header class="top-bar">
-        <div class="top-bar-left">
-            <button class="mobile-menu-btn" @click="mobileMenuOpen = !mobileMenuOpen">☰</button>
-            <a href="{% url 'home' %}" class="logo">CityBoard</a>
+    <header class="top-bar" style="padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; min-height: 50px;">
+        <div class="top-bar-left" style="display: flex; align-items: center; gap: 15px;">
+            <button class="mobile-menu-btn" 
+            onclick="toggleMobileMenu()" 
+            style="font-size: 1.3em; background: none; border: none; cursor: pointer; padding: 0;">
+            ☰
+            </button>
+            <a href="{% url 'home' %}" class="logo" style="font-size: 1.3em; font-weight: bold; text-decoration: none; color: inherit;">CityBoard</a>
         </div>
         <div>
-            <a href="{% url 'submit' %}" class="btn btn-yellow">+ Submit</a>
+            <a href="{% url 'submit' %}" class="btn btn-yellow" style="padding: 6px 16px; font-size: 0.9em; text-decoration: none;">+ Submit</a>
         </div>
     </header>
 
@@ -177,7 +181,7 @@
     <!-- Altcha CAPTCHA Library -->
     <script async src="https://cdn.jsdelivr.net/npm/altcha@1.1.0/dist/altcha.min.js" type="module"></script>
     <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
     <!-- ============================================ -->
     <!-- FOOTER                                       -->
     <!-- ============================================ -->
@@ -245,5 +249,23 @@
             
         </div>
     </footer>
+<script>
+    function toggleMobileMenu() {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.classList.toggle('open');
+    }
+    
+    // Close menu when clicking outside (on mobile)
+    document.addEventListener('click', function(event) {
+        const sidebar = document.querySelector('.sidebar');
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        
+        if (sidebar.classList.contains('open') && 
+            !sidebar.contains(event.target) && 
+            !menuBtn.contains(event.target)) {
+            sidebar.classList.remove('open');
+        }
+    });
+</script>
 </body>
 </html>
