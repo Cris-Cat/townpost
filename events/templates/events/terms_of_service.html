@@ -1,0 +1,87 @@
+{% extends 'events/base.html' %}
+
+{% block title %}Terms of Service - CityBoard{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="margin-bottom: 30px; border-bottom: 3px solid #f1c40f; padding-bottom: 15px;">Terms of Service</h1>
+    
+    <p style="color: #666; font-size: 0.9em; margin-bottom: 30px;">
+        <strong>Last updated:</strong> September 2, 2026
+    </p>
+
+    <div style="line-height: 1.8; color: #333;">
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">1. Acceptance of Terms</h2>
+        <p>By accessing or using CityBoard ("the Platform"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Platform.</p>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">2. Description of Service</h2>
+        <p>CityBoard is a community noticeboard platform that allows users to submit and view local events, notices, and happenings. The Platform is free to use and does not require user registration.</p>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">3. User Responsibilities</h2>
+        <p>When submitting content to CityBoard, you agree to:</p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>Provide accurate and truthful information about your event</li>
+            <li>Only submit content that you own or have permission to use</li>
+            <li>Not submit spam, misleading, or fraudulent content</li>
+            <li>Not include personal information (names, phone numbers, addresses) of individuals without their explicit consent</li>
+            <li>Not upload images containing identifiable faces without permission</li>
+            <li>Not submit content that is illegal, offensive, discriminatory, or harmful</li>
+            <li>Not attempt to bypass our moderation or security systems</li>
+        </ul>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">4. Content Guidelines</h2>
+        <p>All submissions must be related to local community events, activities, or notices. We reserve the right to reject or remove any content that:</p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>Contains hate speech, harassment, or discrimination</li>
+            <li>Promotes violence or illegal activities</li>
+            <li>Contains explicit or inappropriate content</li>
+            <li>Violates copyright, trademark, or privacy rights</li>
+            <li>Is commercial advertising or spam</li>
+            <li>Is unrelated to community events (e.g., personal rants, political propaganda)</li>
+        </ul>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">5. Moderation</h2>
+        <p>All submissions are reviewed by our moderation team before being published. We reserve the right to:</p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>Approve, reject, or remove any submission at our discretion</li>
+            <li>Edit content for clarity, formatting, or to remove prohibited material</li>
+            <li>Archive or delete content that is no longer relevant</li>
+            <li>Block users who repeatedly violate these terms</li>
+        </ul>
+        <p>Moderation decisions are final. If you believe your content was removed in error, please contact us.</p>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">6. Intellectual Property</h2>
+        <p>You retain ownership of the content you submit. However, by submitting content to CityBoard, you grant us a non-exclusive, worldwide, royalty-free license to display, distribute, and promote your content on the Platform. You confirm that you have the right to grant this license.</p>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">7. Privacy and Data</h2>
+        <p>Your use of CityBoard is also governed by our <a href="{% url 'privacy_policy' %}" style="color: #007bff;">Privacy Policy</a>. We automatically remove EXIF metadata (including GPS data) from uploaded images to protect your privacy.</p>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">8. Limitation of Liability</h2>
+        <p>CityBoard is provided "as is" without warranties of any kind. We are not liable for:</p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>Errors or inaccuracies in user-submitted content</li>
+            <li>Any damages arising from your use of the Platform</li>
+            <li>Content posted by third parties</li>
+            <li>Service interruptions or technical issues</li>
+        </ul>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">9. Editing and Deletion</h2>
+        <p>After submitting an event, you will receive a secret edit link. This link allows you to edit your submission. However:</p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>Edited submissions must be re-approved by our moderation team</li>
+            <li>If you lose the secret edit link, we cannot recover it</li>
+            <li>We reserve the right to reject edited content that violates these terms</li>
+        </ul>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">10. Changes to Terms</h2>
+        <p>We may update these Terms of Service from time to time. Continued use of the Platform after changes constitutes acceptance of the new terms.</p>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px; color: #333;">11. Contact Us</h2>
+        <p>If you have questions about these Terms of Service, please contact us at:</p>
+        <p style="margin-left: 20px; margin-bottom: 15px;">
+            <strong>Email:</strong> legal@cityboard.example<br>
+            <strong>Address:</strong> [Your Address Here]
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -15,6 +15,9 @@ urlpatterns = [
     
     path('event/<slug:slug>/', views.event_detail_view, name='event_detail'),
     path('altcha/challenge/', views.altcha_challenge_view, name='altcha_challenge'),
+    path('privacy/', views.privacy_policy_view, name='privacy_policy'),
+    path('terms/', views.terms_of_service_view, name='terms_of_service'),
+    
 
 ]
 

@@ -178,5 +178,72 @@
     <script async src="https://cdn.jsdelivr.net/npm/altcha@1.1.0/dist/altcha.min.js" type="module"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- ============================================ -->
+    <!-- FOOTER                                       -->
+    <!-- ============================================ -->
+    <footer style="background: #1f2937; color: #d1d5db; padding: 40px 20px 20px 20px; margin-top: 60px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            
+            <!-- Top Section: Links -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
+                
+                <!-- Column 1: About -->
+                <div>
+                    <h3 style="color: #f1c40f; margin-bottom: 15px; font-size: 1.1em;">CityBoard</h3>
+                    <p style="font-size: 0.9em; line-height: 1.6; color: #9ca3af;">
+                        Your community noticeboard for local events, activities, and happenings.
+                    </p>
+                </div>
+                
+                <!-- Column 2: Quick Links -->
+                <div>
+                    <h3 style="color: #f1c40f; margin-bottom: 15px; font-size: 1.1em;">Quick Links</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 8px;">
+                            <a href="{% url 'home' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
+                                → Weekly Board
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            <a href="{% url 'info_board' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
+                                → Info Board
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            <a href="{% url 'submit' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
+                                → Submit Event
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Column 3: Legal -->
+                <div>
+                    <h3 style="color: #f1c40f; margin-bottom: 15px; font-size: 1.1em;">Legal</h3>
+                    <ul style="list-style: none; padding: 0; margin: 0;">
+                        <li style="margin-bottom: 8px;">
+                            <a href="{% url 'privacy_policy' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
+                                → Privacy Policy
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 8px;">
+                            <a href="{% url 'terms_of_service' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
+                                → Terms of Service
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+            </div>
+            
+            <!-- Bottom Section: Copyright -->
+            <div style="border-top: 1px solid #374151; padding-top: 20px; text-align: center;">
+                <p style="margin: 0; font-size: 0.85em; color: #9ca3af;">
+                    © 2026 CityBoard. All rights reserved. | Built with ❤️ for the community
+                </p>
+            </div>
+            
+        </div>
+    </footer>
 </body>
 </html>

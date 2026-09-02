@@ -225,3 +225,15 @@ def altcha_challenge_view(request):
         'salt': challenge.salt,
         'signature': challenge.signature,
     })
+
+def privacy_policy_view(request):
+    """
+    Privacy Policy Page
+    """
+    return render(request, 'events/privacy_policy.html')
+
+def terms_of_service_view(request):
+    """
+    Terms of Service Page
+    """
+    return render(request, 'events/terms_of_service.html')
