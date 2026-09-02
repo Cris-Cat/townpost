@@ -56,6 +56,16 @@
         </div>
 
         <input type="checkbox" name="consent_given" id="id_consent_given" style="display: none;" required>
+                 <!-- ALTCHA CAPTCHA WIDGET -->
+        <div style="margin: 20px 0; text-align: center;">
+            <altcha-widget 
+                challengeurl="{% url 'altcha_challenge' %}"
+                name="altcha"
+                auto="onload"
+                floating="false"
+                style="max-width: 300px; margin: 0 auto;">
+            </altcha-widget>
+        </div>   
         <button type="button" @click="openModal()" class="btn" style="margin-top: 30px; width: 100%; font-size: 1.1em;">Submit Changes</button>
     </form>
 

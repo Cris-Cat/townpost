@@ -8,7 +8,7 @@
 <div x-data="photoUploader()">
 
     <h1>Submit an Event</h1>
-    
+
     <!-- Form uses @submit.prevent to stop default submission -->
     <form method="POST" enctype="multipart/form-data" @submit.prevent="requestSubmit">
         {% csrf_token %}
@@ -164,7 +164,16 @@
                 </div>
             </fieldset>
         </div>
-
+            <!-- ALTCHA CAPTCHA WIDGET -->
+        <div style="margin: 20px 0; text-align: center;">
+            <altcha-widget 
+                challengeurl="{% url 'altcha_challenge' %}"
+                name="altcha"
+                auto="onload"
+                floating="false"
+                style="max-width: 300px; margin: 0 auto;">
+            </altcha-widget>
+        </div>        
         <!-- Submit Button -->
         <button type="button" @click="requestSubmit()" class="btn" style="margin-top: 30px; width: 100%; font-size: 1.1em;">
             Submit Event
@@ -200,6 +209,8 @@
                         style="padding: 10px 20px; background: #e0e0e0; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                     Cancel
                 </button>
+                
+                
                 <button type="button" @click="confirmAndSubmit()" 
                         style="padding: 10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                     I Agree & Submit

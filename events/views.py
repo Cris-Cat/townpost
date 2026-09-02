@@ -6,6 +6,11 @@ from .models import Event, EventImage, Category
 from .forms import EventForm
 from django.http import JsonResponse
 from .utils import process_and_strip_exif, get_week_range
+from altcha import ChallengeOptionsV1, create_challenge_v1
+from datetime import datetime, timedelta
+from altcha import verify_solution
+from django.conf import settings
+
 
 def home_view(request):
     """
@@ -57,6 +62,20 @@ def submit_event_view(request):
     Submit Event View
     """
     if request.method == 'POST':
+                # --- ALTCHA VERIFICATION ---
+        altcha_payload = request.POST.get('altcha', '')
+        if not altcha_payload:
+            form = EventForm(request.POST, request.FILES)
+            form.add_error(None, 'Captcha verification failed. Please try again.')
+            return render(request, 'events/submit.html', {'form': form})
+        
+        is_valid = verify_solution(altcha_payload, settings.ALTCHA_HMAC_SECRET)
+        if not is_valid:
+            form = EventForm(request.POST, request.FILES)
+            form.add_error(None, 'Captcha verification failed. Please refresh the page and try again.')
+            return render(request, 'events/submit.html', {'form': form})
+        # --- END ALTCHA VERIFICATION ---
+
         form = EventForm(request.POST, request.FILES)
         if form.is_valid():
             event = form.save()
@@ -96,8 +115,19 @@ def secret_edit_view(request, token):
         return render(request, 'events/edit_denied.html')
 
     if request.method == 'POST':
-        print("=== FORM SUBMITTED ===")
+        # --- ALTCHA VERIFICATION ---
+        altcha_payload = request.POST.get('altcha', '')
+        if not altcha_payload:
+            form = EventForm(request.POST, request.FILES)
+            form.add_error(None, 'Captcha verification failed. Please try again.')
+            return render(request, 'events/submit.html', {'form': form})
         
+        is_valid = verify_solution(altcha_payload, settings.ALTCHA_HMAC_SECRET)
+        if not is_valid:
+            form = EventForm(request.POST, request.FILES)
+            form.add_error(None, 'Captcha verification failed. Please refresh the page and try again.')
+            return render(request, 'events/submit.html', {'form': form})
+        # --- END ALTCHA VERIFICATION ---        
         # We pass instance=event so the form validates, but we DO NOT call form.save()
         form = EventForm(request.POST, request.FILES, instance=event)
         
@@ -172,4 +202,26 @@ def event_detail_view(request, slug):
     return render(request, 'events/event_detail.html', {
         'event': event,
         'approved_images': approved_images # Pass this to the template
+    })
+
+
+def altcha_challenge_view(request):
+    """
+    Altcha Challenge Endpoint (v2.x API)
+    -------------------------------------
+    Purpose: Generates a proof-of-work challenge for the Altcha widget.
+    """
+    options = ChallengeOptionsV1(
+        max_number=100000,  # Good balance: ~0.5-1 second on most devices
+        expires=datetime.now() + timedelta(hours=1),  # Expires in 1 hour
+        hmac_key=settings.ALTCHA_HMAC_SECRET,
+    )
+    challenge = create_challenge_v1(options)
+    
+    return JsonResponse({
+        'algorithm': challenge.algorithm,
+        'challenge': challenge.challenge,
+        'maxnumber': challenge.max_number,
+        'salt': challenge.salt,
+        'signature': challenge.signature,
     })

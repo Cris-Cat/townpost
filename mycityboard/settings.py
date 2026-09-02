@@ -71,7 +71,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mycityboard.wsgi.application'
 
-
+# Altcha CAPTCHA Secret Key
+ALTCHA_HMAC_SECRET = '375df1dd13d00717512f7c3547c9698d04c4dcd12a4b19f4825b57fdca22f0ef'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
