@@ -3,6 +3,12 @@
 import io
 from PIL import Image
 from django.core.files.base import ContentFile
+import calendar
+from datetime import date
+from datetime import date
+import datetime
+from django.utils import timezone
+
 
 def process_and_strip_exif(image_file):
     """
@@ -57,77 +63,41 @@ def process_and_strip_exif(image_file):
     # We keep the original filename
     return ContentFile(buffer.getvalue(), name=image_file.name)
 
-import datetime
-from django.utils import timezone
+
 
 def get_week_range(target_date=None):
-    """
-    Week Range Calculator
-    ---------------------
-    Purpose: Returns the Monday 00:00 and Sunday 23:59 for a given date.
-    If no date is provided, it defaults to today.
-    
-    Technical Points:
-    - Uses Python's datetime.weekday() where Monday is 0 and Sunday is 6.
-    - Uses Django's timezone utilities to ensure compatibility with the database.
-    """
     if target_date is None:
-        target_date = timezone.localdate() # Gets today's date in the current timezone
-        
-    # Calculate the Monday of this week
-    # If today is Wednesday (2), we subtract 2 days to get Monday (0)
+        target_date = timezone.localdate()
     monday = target_date - datetime.timedelta(days=target_date.weekday())
-    
-    # Calculate the Sunday of this week
     sunday = monday + datetime.timedelta(days=6)
-    
     return monday, sunday
 
-
-def get_upcoming_weeks(num_weeks=4):
-    """
-    Upcoming Weeks Generator
-    ------------------------
-    Purpose: Generates a list of the next 'num_weeks' (including the current week).
-    Used for the Calendar button to browse future weeks.
-    """
+def get_upcoming_weeks(num_weeks=3):
+    """Returns the NEXT 'num_weeks' weeks (excluding current week)"""
     weeks = []
-    # Start from the current week
     current_monday, _ = get_week_range()
-    
-    for i in range(num_weeks):
+    # Start from i=1 to skip the current week
+    for i in range(1, num_weeks + 1):
         monday = current_monday + datetime.timedelta(weeks=i)
         sunday = monday + datetime.timedelta(days=6)
         weeks.append((monday, sunday))
-        
     return weeks
 
-
-def get_past_weeks_grouped_by_month(num_months=3):
-    """
-    Past Weeks Grouping
-    -------------------
-    Purpose: Generates past weeks grouped by month for the Archive side panel.
-    Returns a dictionary like: {'August 2023': [(mon, sun), ...], 'July 2023': [...]}
-    """
-    archive = {}
-    current_monday, _ = get_week_range()
+def get_past_months(num_months=6):
+    """Returns the last 'num_months' as a list of dictionaries"""
+    months = []
+    today = timezone.localdate()
     
-    # We go backwards. Start from last week.
-    for i in range(1, num_months * 5): # 5 weeks per month approx
-        monday = current_monday - datetime.timedelta(weeks=i)
-        sunday = monday + datetime.timedelta(days=6)
+    for i in range(num_months):
+        year = today.year
+        month = today.month - i
         
-        # Group by Month and Year
-        month_key = monday.strftime("%B %Y") # e.g., "August 2023"
-        
-        if month_key not in archive:
-            archive[month_key] = []
+        while month <= 0:
+            month += 12
+            year -= 1
             
-        archive[month_key].append((monday, sunday))
+        month_key = f"{year}-{month:02d}"
+        month_label = date(year, month, 1).strftime("%B %Y")
+        months.append({'key': month_key, 'label': month_label})
         
-        # Stop if we have enough months
-        if len(archive) >= num_months:
-            break
-            
-    return archive
+    return months

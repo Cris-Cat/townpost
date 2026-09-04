@@ -1,62 +1,45 @@
-<!-- File: events/templates/events/partials/sidebar.html -->
+<!-- Sidebar Navigation -->
+<div style="display: flex; flex-direction: column; gap: 15px;">
 
-<!-- 1. Main Navigation -->
-<div class="nav-section" style="margin-top: 35px;">
-    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>📋 Browse</div>
+    <!-- LIVE: This Week -->
+    <a href="?view=this_week" class="nav-link {% if request.GET.view == 'this_week' or not request.GET.view %}active{% endif %}" style="font-weight: bold; background: #fef3c7;">
+        🔥 LIVE: This Week ({{ current_week_start|date:"M j" }}-{{ current_week_end|date:"j" }})
+    </a>
+
+    <!-- Notices Board -->
+    <a href="{% url 'info_board' %}" class="nav-link {% if request.path == '/info/' %}active{% endif %}" style="font-weight: bold; background: #ff07071e;">
+        📌 NOTICES BOARD
+    </a>
+
+    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 5px 0;">
+
+    <!-- Active Schedule (Upcoming) -->
+    <div class="nav-title" style="font-size: 0.8em; color: #6b7280; text-transform: uppercase; margin-bottom: 5px;">📅 ACTIVE SCHEDULE</div>
     
-    <!-- "This Week" resets the filters -->
-    <a href="{% url 'home' %}" class="nav-link {% if not request.GET.start_date and not request.GET.view %}active{% endif %}">
-        <span class="nav-icon">📅</span>
-        <span class="nav-text" x-show="!sidebarCollapsed" x-transition>This Week</span>
-    </a>
-    
-    <!-- "Show All" shows recent 20 -->
-    <a href="?view=all" class="nav-link {% if request.GET.view == 'all' %}active{% endif %}">
-        <span class="nav-icon">↕️</span>
-        <span class="nav-text" x-show="!sidebarCollapsed" x-transition>Show All</span>
-    </a>
-
-    <!-- "Notices" shows dateless posts -->
-    <a href="{% url 'info_board' %}" class="nav-link {% if request.path == '/info/' %}active{% endif %}">
-        <span class="nav-icon">📌</span>
-        <span class="nav-text" x-show="!sidebarCollapsed" x-transition>Notices</span>
-    </a>
-</div>
-
-<!-- 2. Upcoming Weeks -->
-<div class="nav-section">
-    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>🗓️ Upcoming</div>
     {% for monday, sunday in upcoming_weeks %}
-        <!-- Link sends the exact start and end date of this week to the filter -->
-        <a href="?start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}" 
-           class="nav-link {% if request.GET.start_date == monday|date:'Y-m-d' %}active{% endif %}">
-            <span class="nav-icon">🗓️</span>
-            <span class="nav-text" x-show="!sidebarCollapsed" x-transition>
-                {{ monday|date:"M j" }} - {{ sunday|date:"j" }}
-            </span>
+        <a href="?view=upcoming&start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}" 
+           class="nav-link {% if request.GET.view == 'upcoming' and request.GET.start_date == monday|date:'Y-m-d' %}active{% endif %}" 
+           style="padding-left: 20px; font-size: 0.95em;">
+           ▸ {{ monday|date:"M j" }} – {{ sunday|date:"M j" }}
         </a>
     {% endfor %}
-</div>
 
-<!-- 3. Past Events (Archive) -->
-<div class="nav-section">
-    <div class="nav-title" x-show="!sidebarCollapsed" x-transition>🗄️ Past Events</div>
+    <!-- Past Events -->
+    <div class="nav-title" style="font-size: 0.8em; color: #6b7280; text-transform: uppercase; margin: 15px 0 5px 0;">▼ Past Events</div>
     
-    {% for month_name, weeks in past_months.items %}
-        <div class="month-group">
-            <!-- Month Title (Non-clickable header for grouping) -->
-            <div class="month-title" x-show="!sidebarCollapsed" x-transition>{{ month_name }}</div>
-            
-            <!-- Weeks inside that month -->
-            {% for monday, sunday in weeks %}
-                <!-- Link sends the exact start and end date of this past week -->
-                <a href="?start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}" 
-                   class="week-link" x-show="!sidebarCollapsed" x-transition>
-                    Week of {{ monday|date:"M j" }}
-                </a>
-            {% endfor %}
-        </div>
-    {% empty %}
-        <p class="nav-text" x-show="!sidebarCollapsed" x-transition style="font-size: 0.85em; color: #9ca3af; padding-left: 36px;">None yet.</p>
+    {% for month in past_months %}
+        <a href="?view=past&month={{ month.key }}" 
+           class="nav-link {% if request.GET.view == 'past' and request.GET.month == month.key %}active{% endif %}" 
+           style="padding-left: 20px; font-size: 0.95em;">
+           {{ month.label }}
+        </a>
     {% endfor %}
+
+    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 15px 0;">
+
+    <!-- Browse All -->
+    <a href="?view=all" class="nav-link {% if request.GET.view == 'all' %}active{% endif %}">
+         🔎 Browse All active submissions
+    </a>
+
 </div>

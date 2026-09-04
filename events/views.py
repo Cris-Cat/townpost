@@ -7,59 +7,110 @@ from .forms import EventForm
 from django.http import JsonResponse
 from .utils import process_and_strip_exif, get_week_range
 from altcha import ChallengeOptionsV1, create_challenge_v1
-from datetime import datetime, timedelta
 from altcha import verify_solution
 from django.conf import settings
 from django.utils import timezone
 from django.core.paginator import Paginator
-
+from django.db.models import Q
+import calendar
+from datetime import datetime, timedelta, date
 
 def home_view(request):
-    """
-    Home Page View
-    --------------
-    Purpose: Shows either this week's events OR all recent events (toggle via filter bar).
-    """
-    # Check if user wants to see all recent events
-    is_show_all = request.GET.get('show_all') == 'true'
+    view_type = request.GET.get('view', 'this_week')
+    start_date_param = request.GET.get('start_date')
+    end_date_param = request.GET.get('end_date')
+    month_param = request.GET.get('month')
     
-    if is_show_all:
-        # Show 20 most recent approved events (no date filter)
-        events_list = Event.objects.filter(status='approved').order_by('-created_at')[:20]
-        week_start = None
-        week_end = None
-    else:
-        # Show events for the current week (Monday to Sunday)
-        today = timezone.now().date()
-        week_start = today - timedelta(days=today.weekday())  # Monday
-        week_end = week_start + timedelta(days=6)  # Sunday
+    # NEW: Custom Ribbon Filters
+    category_param = request.GET.get('category')
+    from_date_param = request.GET.get('from_date')
+    to_date_param = request.GET.get('to_date')
+
+    today = timezone.now().date()
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    
+    title = "This Week's Events"
+
+    # 1. Base Query Logic
+    if view_type == 'all':
+        events_list = Event.objects.filter(status='approved').order_by('-created_at')
+        title = "All Active Submissions"
         
-        events_list = Event.objects.filter(
-            status='approved',
-            start_date__gte=week_start,
-            start_date__lte=week_end
-        ).order_by('start_date', 'start_time')
-    
-    # Pagination: 30 posts per page
+    elif view_type == 'upcoming' and start_date_param and end_date_param:
+        s_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
+        e_date = datetime.strptime(end_date_param, '%Y-%m-%d').date() + timedelta(days=1)
+        events_list = Event.objects.filter(status='approved', start_date__gte=s_date, start_date__lt=e_date).order_by('start_date')
+        title = f"Schedule: {s_date.strftime('%b %d')} – {(e_date - timedelta(days=1)).strftime('%b %d')}"
+        week_start, week_end = s_date, e_date - timedelta(days=1)
+        
+    elif view_type == 'past' and month_param:
+        try:
+            year, month = map(int, month_param.split('-'))
+            first_day = date(year, month, 1)
+            last_day = date(year, month, calendar.monthrange(year, month)[1])
+            events_list = Event.objects.filter(status='approved', created_at__date__gte=first_day, created_at__date__lte=last_day).order_by('-created_at')
+            title = f"Past Events: {first_day.strftime('%B %Y')}"
+            week_start, week_end = first_day, last_day
+        except Exception:
+            events_list = Event.objects.none()
+            title = "Invalid Month"
+            
+    else: # Default: This Week (by submission date)
+        events_list = Event.objects.filter(status='approved', created_at__date__gte=week_start, created_at__date__lte=week_end).order_by('-created_at')
+        title = f"This Week ({week_start.strftime('%b %d')}-{week_end.strftime('%d')})"
+
+    # 2. Apply Custom Ribbon Filters (Overrides date logic if dates are provided)
+    if category_param:
+        events_list = events_list.filter(category__name__iexact=category_param)
+        
+    if from_date_param or to_date_param:
+        # If user uses the ribbon dates, we filter by EVENT date (start_date), not submission date
+        if from_date_param:
+            events_list = events_list.filter(start_date__gte=from_date_param)
+        if to_date_param:
+            events_list = events_list.filter(start_date__lte=to_date_param)
+            
+        # Update title to reflect custom search
+        title = "Custom Search Results"
+        if from_date_param and to_date_param:
+            title = f"Events from {from_date_param} to {to_date_param}"
+        elif from_date_param:
+            title = f"Events after {from_date_param}"
+        elif to_date_param:
+            title = f"Events before {to_date_param}"
+
+    # Pagination
     paginator = Paginator(events_list, 30)
     page_number = request.GET.get('page')
     events = paginator.get_page(page_number)
     
     return render(request, 'events/home.html', {
         'events': events,
-        'is_show_all': is_show_all,
+        'is_show_all': (view_type == 'all'),
         'week_start': week_start,
         'week_end': week_end,
+        'display_title': title,
     })
 
 
 def info_board_view(request):
     """
-    Info Board View (Dateless Notices)
+    Info Board View (Notices)
+    -------------------------
+    Purpose: Shows only active 'Notice' category posts from the last 30 days.
     """
-    events = Event.objects.filter(status='approved', start_date__isnull=True).order_by('-created_at')
+    # Calculate the date 30 days ago
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    
+    # Filter by: Approved, Category is 'Notice', and Submitted in the last 30 days
+    events = Event.objects.filter(
+        status='approved',
+        category__name__iexact='Notice',  # Matches 'Notice', 'notice', 'NOTICE'
+        created_at__gte=thirty_days_ago
+    ).order_by('-created_at')
+    
     return render(request, 'events/info_board.html', {'events': events})
-
 
 def submit_event_view(request):
     """
