@@ -1,30 +1,119 @@
-<!-- File: events/templates/events/info_board.html -->
 {% extends 'events/base.html' %}
-
 {% block title %}Info Board - CityBoard{% endblock %}
 
 {% block content %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h1 style="margin: 0;">📌 Info Board</h1>
-        <a href="{% url 'home' %}" class="btn" style="background: #333; color: #fff;">← Back to This Week</a>
+
+    <!-- Page Header with Back Button -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;">
+        <div>
+            <h1 style="color: #333; margin-bottom: 10px;">📌 Info Board</h1>
+            <p style="color: #666; margin: 0;">Ongoing notices, community announcements, and events without a specific date.</p>
+        </div>
+        <a href="{% url 'home' %}" style="padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 6px; font-size: 0.9em; font-weight: 500;">← Back to This Week</a>
     </div>
-    
-    <p style="color: #666; margin-bottom: 20px;">
-        Ongoing notices, community announcements, and events without a specific date.
-    </p>
-    
+
     {% if events %}
-        {% for event in events %}
-            <div class="event-card" style="border-left: 4px solid #f1c40f;">
-                <h2 style="margin-top: 0;"><a href="{% url 'event_detail' event.slug %}" style="text-decoration: none; color: #333;">{{ event.title }}</a></h2>
-                <p style="margin: 5px 0;"><strong>Category:</strong> {{ event.category }}</p>
-                <p style="color: #555;">{{ event.description|truncatewords:25 }}</p>
-                <a href="{% url 'event_detail' event.slug %}" style="color: #007bff; text-decoration: none; font-weight: bold;">Read more →</a>
-            </div>
-        {% endfor %}
+        <!-- Responsive Grid Container (2 Columns) -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 35px; max-width: 1000px; margin: 0 auto; padding: 20px;">
+            {% for event in events %}
+                
+                <!-- Sticky Note Card -->
+                <article style="background: linear-gradient(135deg, #fff9e6 0%, #fff4cc 100%); border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; margin-top: 10px;">
+                    
+                    <!-- 📌 3D Push Pin -->
+                    <div class="push-pin"></div>
+
+                    <!-- TOP HALF: Image + Header Info -->
+                    <div style="display: flex; gap: 15px; padding: 20px 20px 10px 20px;">
+                        
+                        <!-- 120x120 Image -->
+                        <div style="flex: 0 0 120px; width: 120px; height: 120px; border-radius: 6px; overflow: hidden; background: #e5e7eb; flex-shrink: 0;">
+                            {% if event.images.all.first %}
+                                <img src="{{ event.images.all.first.image.url }}" alt="{{ event.title }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #d1d5db; color: #6b7280; font-size: 0.8em; font-weight: 500; text-align: center; padding: 5px;">
+                                    No Image
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Title, Category, Location -->
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0;">
+                            <h2 style="margin: 0; font-size: 1.15em; font-weight: 700; line-height: 1.2; color: #1f2937;">
+                                <a href="{% url 'event_detail' event.slug %}" style="color: inherit; text-decoration: none;">{{ event.title }}</a>
+                            </h2>
+                            
+                            <div style="font-size: 0.85em; color: #6b7280;">📂 {{ event.category }}</div>
+
+                            {% if event.city %}
+                                <div style="font-size: 0.85em; color: #6b7280;"> {{ event.city }}{% if event.country %}, {{ event.country }}{% endif %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- BOTTOM HALF: Description + Read More -->
+                    <div style="padding: 15px 20px 20px 20px; border-top: 1px dashed rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column;">
+                        <p style="margin: 0 0 15px 0; font-size: 0.95em; line-height: 1.5; color: #4b5563; flex: 1;">
+                            {{ event.description|truncatewords:10 }}
+                        </p>
+                        
+                        <div style="text-align: right;">
+                            <a href="{% url 'event_detail' event.slug %}" style="color: #d97706; text-decoration: none; font-size: 0.9em; font-weight: 600;">Read more →</a>
+                        </div>
+                    </div>
+                    
+                </article>
+            {% endfor %}
+        </div>
+        
     {% else %}
-        <div style="text-align: center; padding: 40px; border: 2px dashed #ccc; border-radius: 8px;">
-            <p style="font-size: 1.2em; color: #666;">No ongoing notices at the moment.</p>
+        <div style="text-align: center; padding: 60px 20px;">
+            <p style="font-size: 1.2em; color: #666; margin-bottom: 20px;">No ongoing notices at the moment.</p>
         </div>
     {% endif %}
+
+    <!-- 3D Pin Styles & Responsive CSS -->
+    <style>
+        /* --- 3D Push Pin Styling --- */
+        .push-pin {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 3px 5px rgba(0,0,0,0.4), 
+                        inset 0 2px 3px rgba(255,255,255,0.6), 
+                        inset 0 -2px 3px rgba(0,0,0,0.3);
+            z-index: 10;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* "Random" Color Cycling using CSS Radial Gradients */
+        article:nth-child(4n+1) .push-pin { background: radial-gradient(circle at 35% 35%, #ff5252, #c62828); } /* Red */
+        article:nth-child(4n+2) .push-pin { background: radial-gradient(circle at 35% 35%, #52a8ff, #2868c8); } /* Blue */
+        article:nth-child(4n+3) .push-pin { background: radial-gradient(circle at 35% 35%, #52ff88, #28c858); } /* Green */
+        article:nth-child(4n+4) .push-pin { background: radial-gradient(circle at 35% 35%, #ffcc52, #c89828); } /* Orange */
+
+        /* --- Responsive Layout --- */
+        /* Mobile: 1 column */
+        @media (max-width: 768px) {
+            [style*="grid-template-columns: repeat(2"] {
+                grid-template-columns: 1fr !important;
+                max-width: 500px !important;
+            }
+        }
+        
+        /* Hover effect for cards */
+        article[style*="background: linear-gradient"] {
+            cursor: pointer;
+        }
+        
+        article[style*="background: linear-gradient"]:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+        }
+    </style>
+
 {% endblock %}

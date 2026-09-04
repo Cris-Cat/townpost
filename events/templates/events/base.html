@@ -1,172 +1,172 @@
-<!-- File: events/templates/events/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CityBoard{% endblock %}</title>
-        <style>
-        /* Base Reset */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5; margin: 0; padding: 0; background: #f4f4f5; color: #333; }
-        a { text-decoration: none; color: inherit; }
-        
-        /* 1. SLIM TOP BAR */
-        .top-bar {
-            background: #fff; border-bottom: 1px solid #e5e7eb; padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center; height: 50px;
-            position: sticky; top: 0; z-index: 50;
-        }
-        .top-bar-left { display: flex; align-items: center; gap: 15px; }
-        .logo { font-weight: bold; font-size: 1.2em; }
-        .mobile-menu-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; display: none; }
-
-        /* 2. LAYOUT CONTAINER */
-        .layout-container {
-            display: flex; max-width: 1200px; margin: 20px auto; padding: 0 20px;
-            gap: 20px; align-items: flex-start;
-        }
-
-        /* 3. ULTRA-THIN COLLAPSIBLE SIDEBAR */
-        .sidebar {
-            width: 120px; /* HALF of previous width */
-            background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;
-            padding: 15px 10px; transition: width 0.3s ease, padding 0.3s ease;
-            overflow: hidden; white-space: nowrap; 
-            position: relative;
-        }
-        
-        /* Collapsed State: Only wide enough for icons */
-        .sidebar.collapsed {
-            width: 60px;
-            padding: 15px 5px;
-        }
-
-        /* Collapse Toggle Button */
-        .collapse-btn {
-            position: absolute; top: 10px; right: 5px;
-            background: #f3f4f6; border: none; border-radius: 4px;
-            width: 24px; height: 24px; cursor: pointer; font-size: 14px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s, right 0.3s ease;
-            z-index: 10;
-        }
-        .collapse-btn:hover { background: #e5e7eb; }
-        
-        /* Center the button when collapsed */
-        .sidebar.collapsed .collapse-btn { 
-            right: 50%; 
-            transform: translateX(50%); 
-        }
-
-        /* Sidebar Navigation Styles */
-        .nav-section { margin-bottom: 25px; margin-top: 35px; } /* Margin for toggle button */
-        
-        .nav-title { 
-            font-size: 0.7em; text-transform: uppercase; color: #9ca3af; 
-            font-weight: bold; margin-bottom: 10px; letter-spacing: 0.5px;
-        }
-        
-        .nav-link { 
-            display: flex; align-items: center; gap: 8px;
-            padding: 8px 6px; border-radius: 6px; margin-bottom: 4px; 
-            font-size: 0.85em; color: #374151; transition: background 0.2s;
-        }
-        .nav-link:hover { background: #f3f4f6; color: #000; }
-        .nav-link.active { background: #f1c40f; color: #000; font-weight: bold; }
-        
-        .nav-icon { font-size: 1.3em; min-width: 24px; text-align: center; flex-shrink: 0; }
-        
-        .month-group { margin-bottom: 15px; }
-        .month-title { 
-            font-size: 0.75em; font-weight: bold; color: #111827; margin-bottom: 5px; 
-            padding-left: 32px; 
-        }
-        
-        .week-link { 
-            display: block; padding: 6px 6px 6px 32px; font-size: 0.75em; 
-            color: #4b5563; border-radius: 6px;
-        }
-        .week-link:hover { background: #f3f4f6; color: #000; }
-
-        /* --- STRICT COLLAPSED STATE: CENTER ICONS --- */
-        .sidebar.collapsed .nav-link {
-            justify-content: center;
-            padding: 12px 0;
-            gap: 0;
-        }
-        .sidebar.collapsed .nav-icon {
+    
+    <!-- Wood Board & Layout Styles -->
+    <style>
+        /* --- COMPRESSED WOOD / CORK BOARD BACKGROUND --- */
+        body {
             margin: 0;
-            font-size: 1.4em;
-        }
-
-        /* 4. MAIN CONTENT */
-        .main-content {
-            flex: 1; background: #fff; padding: 25px;
-            border-radius: 8px; border: 1px solid #e5e7eb; min-height: 500px;
-        }
-
-        /* Buttons & Cards */
-        .btn { display: inline-block; padding: 8px 16px; background: #333; color: #fff; border-radius: 6px; border: none; cursor: pointer; font-size: 0.9em; }
-        .btn-yellow { background: #f1c40f; color: #000; font-weight: bold; }
-        .btn-yellow:hover { background: #d4ac0d; }
-        .event-card { border: 1px solid #eee; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .mobile-menu-btn { display: block; }
-            .sidebar {
-                position: fixed; top: 60px; left: 0; bottom: 0; z-index: 40;
-                transform: translateX(-100%); width: 200px; /* Slightly wider on mobile for readability */
-            }
-            .sidebar.open { transform: translateX(0); }
-            .collapse-btn { display: none; } /* Hide collapse button on mobile */
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             
-            /* On mobile, always show text when the menu is open */
-            .sidebar.open .nav-text, .sidebar.open .nav-title, .sidebar.open .month-title, .sidebar.open .week-link {
-                display: block !important;
+            /* Compressed wood color and multi-layered tactile gradient */
+            background-color: #b87d4b;
+            background-image: 
+                /* Subtle fibre grain lighting */
+                radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18) 0%, transparent 60%),
+                radial-gradient(circle at 70% 70%, rgba(0,0,0,0.15) 0%, transparent 70%),
+                /* Compressed particle noise texture */
+                radial-gradient(rgba(0, 0, 0, 0.25) 1px, transparent 0),
+                radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 0);
+            background-size: 100% 100%, 100% 100%, 16px 16px, 12px 12px;
+            background-position: 0 0, 0 0, 0 0, 6px 6px;
+            
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* --- LAYOUT CONTAINER --- */
+        .layout-container {
+            display: flex;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            gap: 25px;
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- MAIN CONTENT AREA --- */
+        .main-content {
+            flex: 1;
+            background: rgba(253, 244, 205, 0.95);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.5);
+            min-height: 600px;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 150px;
+            background: rgba(253, 244, 205, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        /* --- SIDEBAR LINKS STYLING (Fixing the broken look) --- */
+        .sidebar a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+            font-size: 0.95em;
+        }
+        .sidebar a:hover {
+            background: rgba(0,0,0,0.05);
+        }
+        .sidebar h3, .sidebar h4, .sidebar .nav-title, .sidebar .month-title {
+            margin: 15px 0 5px 0;
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            padding: 0 12px;
+        }
+        .sidebar .nav-link.active, .sidebar a.active {
+            background: #f1c40f;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* --- TOP BAR --- */
+        .top-bar {
+            background: rgba(36, 19, 1, 0.904);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #000000;
+            text-decoration: none;
+        }
+
+        /* --- MOBILE RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .layout-container {
+                flex-direction: column;
+                margin: 10px auto;
             }
-            .sidebar.open .nav-link { justify-content: flex-start; gap: 8px; }
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                height: 100vh;
+                z-index: 1000;
+                border-radius: 0;
+                transition: left 0.3s ease;
+            }
+            .sidebar.open {
+                left: 0;
+            }
+            .main-content {
+                padding: 20px;
+            }
         }
     </style>
 </head>
-<!-- x-data manages both mobile menu and desktop collapse -->
+
 <body x-data="{ mobileMenuOpen: false, sidebarCollapsed: false }">
 
     <!-- SLIM TOP BAR -->
-    <header class="top-bar" style="padding: 8px 20px; display: flex; align-items: center; justify-content: space-between; min-height: 50px;">
+    <header class="top-bar">
         <div class="top-bar-left" style="display: flex; align-items: center; gap: 15px;">
-            <button class="mobile-menu-btn" 
-            onclick="toggleMobileMenu()" 
-            style="font-size: 1.3em; background: none; border: none; cursor: pointer; padding: 0;">
-            ☰
-            </button>
-            <a href="{% url 'home' %}" class="logo" style="font-size: 1.3em; font-weight: bold; text-decoration: none; color: inherit;">CityBoard</a>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" style="font-size: 1.3em; background: none; border: none; cursor: pointer; padding: 0; display: none;">☰</button>
+            <a href="{% url 'home' %}" class="logo">CityBoard</a>
         </div>
         <div>
-            <a href="{% url 'submit' %}" class="btn btn-yellow" style="padding: 6px 16px; font-size: 0.9em; text-decoration: none;">+ Submit</a>
+            <a href="{% url 'submit' %}" class="btn btn-yellow" style="padding: 8px 20px; background: #f1c40f; color: #333; text-decoration: none; border-radius: 6px; font-weight: bold;">+ Submit</a>
         </div>
     </header>
 
-    <!-- NEW: Full-Width Banner Area (For Filter Bar) -->
-    <!-- This sits outside the main white box, right under the header -->
-    <div style="max-width: 1200px; margin: 15px auto 0 auto; padding: 0 20px;">
+    <!-- Banner Area -->
+    <div style="max-width: 1400px; margin: 15px auto 0 auto; padding: 0 20px; width: 100%; box-sizing: border-box;">
         {% block top_banner %}{% endblock %}
     </div>
-
 
     <!-- MAIN LAYOUT -->
     <div class="layout-container">
         
         <!-- LEFT: SIDEBAR -->
-        <aside class="sidebar" :class="{ 'collapsed': sidebarCollapsed, 'open': mobileMenuOpen }" @click.away="mobileMenuOpen = false">
+        <aside class="sidebar" :class="{ 'collapsed': sidebarCollapsed, 'open': mobileMenuOpen }">
             
-            <!-- Collapse Button (Desktop Only) -->
-            <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed" title="Toggle Sidebar">
+            <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed" title="Toggle Sidebar" style="float: right; background: none; border: none; cursor: pointer; font-size: 1.2em;">
                 <span x-show="!sidebarCollapsed">&lt;&lt;</span>
                 <span x-show="sidebarCollapsed">&gt;&gt;</span>
             </button>
 
-            <!-- Sidebar Content -->
             {% include 'events/partials/sidebar.html' %}
 
         </aside>
@@ -178,94 +178,73 @@
         </main>
 
     </div>
-    <!-- Altcha CAPTCHA Library -->
+
+    <!-- Scripts -->
     <script async src="https://cdn.jsdelivr.net/npm/altcha@1.1.0/dist/altcha.min.js" type="module"></script>
-    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    <!-- ============================================ -->
-    <!-- FOOTER                                       -->
-    <!-- ============================================ -->
-    <footer style="background: #1f2937; color: #d1d5db; padding: 40px 20px 20px 20px; margin-top: 60px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
+    
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.toggle('open');
+        }
+        
+        document.addEventListener('click', function(event) {
+            const sidebar = document.querySelector('.sidebar');
+            const menuBtn = document.querySelector('.mobile-menu-btn');
             
-            <!-- Top Section: Links -->
+            if (sidebar && sidebar.classList.contains('open') && 
+                !sidebar.contains(event.target) && 
+                menuBtn && !menuBtn.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        });
+
+        if (window.innerWidth <= 768) {
+            const btn = document.querySelector('.mobile-menu-btn');
+            if (btn) btn.style.display = 'block';
+        }
+        window.addEventListener('resize', function() {
+            const btn = document.querySelector('.mobile-menu-btn');
+            const sidebar = document.querySelector('.sidebar');
+            if (window.innerWidth <= 768) {
+                if (btn) btn.style.display = 'block';
+            } else {
+                if (btn) btn.style.display = 'none';
+                if (sidebar) sidebar.classList.remove('open');
+            }
+        });
+    </script>
+
+    <!-- FOOTER -->
+    <footer style="background: rgba(31, 41, 55, 0.95); color: #d1d5db; padding: 40px 20px 20px 20px; margin-top: 40px;">
+        <div style="max-width: 1200px; margin: 0 auto;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
-                
-                <!-- Column 1: About -->
                 <div>
                     <h3 style="color: #f1c40f; margin-bottom: 15px; font-size: 1.1em;">CityBoard</h3>
-                    <p style="font-size: 0.9em; line-height: 1.6; color: #9ca3af;">
-                        Your community noticeboard for local events, activities, and happenings.
-                    </p>
+                    <p style="font-size: 0.9em; line-height: 1.6; color: #9ca3af;">Your community noticeboard for local events, activities, and happenings.</p>
                 </div>
-                
-                <!-- Column 2: Quick Links -->
                 <div>
                     <h3 style="color: #f1c40f; margin-bottom: 15px; font-size: 1.1em;">Quick Links</h3>
                     <ul style="list-style: none; padding: 0; margin: 0;">
-                        <li style="margin-bottom: 8px;">
-                            <a href="{% url 'home' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
-                                → Weekly Board
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 8px;">
-                            <a href="{% url 'info_board' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
-                                → Info Board
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 8px;">
-                            <a href="{% url 'submit' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
-                                → Submit Event
-                            </a>
-                        </li>
+                        <li style="margin-bottom: 8px;"><a href="{% url 'home' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">→ Weekly Board</a></li>
+                        <li style="margin-bottom: 8px;"><a href="{% url 'info_board' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">→ Info Board</a></li>
+                        <li style="margin-bottom: 8px;"><a href="{% url 'submit' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">→ Submit Event</a></li>
                     </ul>
                 </div>
-                
-                <!-- Column 3: Legal -->
                 <div>
                     <h3 style="color: #f1c40f; margin-bottom: 15px; font-size: 1.1em;">Legal</h3>
                     <ul style="list-style: none; padding: 0; margin: 0;">
-                        <li style="margin-bottom: 8px;">
-                            <a href="{% url 'privacy_policy' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
-                                → Privacy Policy
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 8px;">
-                            <a href="{% url 'terms_of_service' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">
-                                → Terms of Service
-                            </a>
-                        </li>
+                        <li style="margin-bottom: 8px;"><a href="{% url 'privacy_policy' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">→ Privacy Policy</a></li>
+                        <li style="margin-bottom: 8px;"><a href="{% url 'terms_of_service' %}" style="color: #d1d5db; text-decoration: none; font-size: 0.9em;">→ Terms of Service</a></li>
                     </ul>
                 </div>
-                
             </div>
-            
-            <!-- Bottom Section: Copyright -->
             <div style="border-top: 1px solid #374151; padding-top: 20px; text-align: center;">
-                <p style="margin: 0; font-size: 0.85em; color: #9ca3af;">
-                    © 2026 CityBoard. All rights reserved. | Built with ❤️ for the community
-                </p>
+                <p style="margin: 0; font-size: 0.85em; color: #9ca3af;">© 2026 CityBoard. All rights reserved. | Built with ❤️ for the community</p>
             </div>
-            
         </div>
     </footer>
-<script>
-    function toggleMobileMenu() {
-        const sidebar = document.querySelector('.sidebar');
-        sidebar.classList.toggle('open');
-    }
-    
-    // Close menu when clicking outside (on mobile)
-    document.addEventListener('click', function(event) {
-        const sidebar = document.querySelector('.sidebar');
-        const menuBtn = document.querySelector('.mobile-menu-btn');
-        
-        if (sidebar.classList.contains('open') && 
-            !sidebar.contains(event.target) && 
-            !menuBtn.contains(event.target)) {
-            sidebar.classList.remove('open');
-        }
-    });
-</script>
+
 </body>
 </html>

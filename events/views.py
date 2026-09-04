@@ -11,42 +11,45 @@ from datetime import datetime, timedelta
 from altcha import verify_solution
 from django.conf import settings
 from django.utils import timezone
+from django.core.paginator import Paginator
 
 
 def home_view(request):
     """
-    Home Page View (Weekly Board with Filters & Show All)
+    Home Page View
+    --------------
+    Purpose: Shows either this week's events OR all recent events (toggle via filter bar).
     """
-    show_all = request.GET.get('view') == 'all'
+    # Check if user wants to see all recent events
+    is_show_all = request.GET.get('show_all') == 'true'
     
-    if show_all:
-        events = Event.objects.filter(status='approved').order_by('-created_at')[:20]
+    if is_show_all:
+        # Show 20 most recent approved events (no date filter)
+        events_list = Event.objects.filter(status='approved').order_by('-created_at')[:20]
+        week_start = None
+        week_end = None
     else:
-        monday, sunday = get_week_range()
-        events = Event.objects.filter(status='approved', start_date__isnull=False)
+        # Show events for the current week (Monday to Sunday)
+        today = timezone.now().date()
+        week_start = today - timedelta(days=today.weekday())  # Monday
+        week_end = week_start + timedelta(days=6)  # Sunday
         
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
-        
-        if start_date and end_date:
-            events = events.filter(start_date__gte=start_date, start_date__lte=end_date)
-        else:
-            events = events.filter(start_date__gte=monday, start_date__lte=sunday)
-            
-        category_slug = request.GET.get('category')
-        if category_slug:
-            events = events.filter(category__slug=category_slug)
-            
-        events = events.order_by('start_date', 'title')
-
-    categories = Category.objects.all().order_by('name')
+        events_list = Event.objects.filter(
+            status='approved',
+            start_date__gte=week_start,
+            start_date__lte=week_end
+        ).order_by('start_date', 'start_time')
+    
+    # Pagination: 30 posts per page
+    paginator = Paginator(events_list, 30)
+    page_number = request.GET.get('page')
+    events = paginator.get_page(page_number)
     
     return render(request, 'events/home.html', {
         'events': events,
-        'categories': categories,
-        'week_start': get_week_range()[0],
-        'week_end': get_week_range()[1],
-        'is_show_all': show_all
+        'is_show_all': is_show_all,
+        'week_start': week_start,
+        'week_end': week_end,
     })
 
 
