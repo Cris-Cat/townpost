@@ -29,6 +29,7 @@
                         </div>
                         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px; min-width: 0;">
                             <h2 style="margin: 0; font-size: 1.15em; font-weight: 700; line-height: 1.2; color: #1f2937;">
+                                {% if event.is_pinned %}📌 {% endif %}
                                 <a href="{% url 'event_detail' event.slug %}" style="color: inherit; text-decoration: none;">{{ event.title }}</a>
                             </h2>
                             {% if event.start_date %}

@@ -112,7 +112,7 @@ class Event(models.Model):
     
     # PROTECT prevents deleting a Category if it has Events attached to it
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='events')
-    
+    is_pinned = models.BooleanField(default=False, help_text="If checked, this event will always appear at the top of the list.")
     # Location details
     country = models.ForeignKey(Country, on_delete=models.PROTECT, blank=True, null=True, help_text="Select country")
     city = models.ForeignKey(City, on_delete=models.PROTECT, blank=True, null=True, help_text="Select city")

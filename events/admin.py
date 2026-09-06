@@ -60,8 +60,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'status', 'start_date', 'created_at')
-    list_filter = ('status', 'category', 'start_date')
+    list_display = ('title', 'category', 'status', 'is_pinned', 'created_at') # Add 'is_pinned' here
+    list_editable = ('status', 'is_pinned') # This allows you to check the box right from the list!
+    list_filter = ('status', 'category', 'is_pinned')
     search_fields = ('title', 'description', 'location_name')
     readonly_fields = ('slug', 'secret_edit_token', 'created_at', 'updated_at')
     inlines = [EventImageInline]

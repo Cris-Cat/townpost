@@ -34,13 +34,13 @@ def home_view(request):
 
     # 1. Base Query Logic
     if view_type == 'all':
-        events_list = Event.objects.filter(status='approved').order_by('-created_at')
+        events_list = Event.objects.filter(status='approved').order_by('-is_pinned', '-created_at')
         title = "All Active Submissions"
         
     elif view_type == 'upcoming' and start_date_param and end_date_param:
         s_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
         e_date = datetime.strptime(end_date_param, '%Y-%m-%d').date() + timedelta(days=1)
-        events_list = Event.objects.filter(status='approved', start_date__gte=s_date, start_date__lt=e_date).order_by('start_date')
+        events_list = Event.objects.filter(status='approved', start_date__gte=s_date, start_date__lt=e_date).order_by('-is_pinned', 'start_date')
         title = f"Schedule: {s_date.strftime('%b %d')} – {(e_date - timedelta(days=1)).strftime('%b %d')}"
         week_start, week_end = s_date, e_date - timedelta(days=1)
         
@@ -49,7 +49,7 @@ def home_view(request):
             year, month = map(int, month_param.split('-'))
             first_day = date(year, month, 1)
             last_day = date(year, month, calendar.monthrange(year, month)[1])
-            events_list = Event.objects.filter(status='approved', created_at__date__gte=first_day, created_at__date__lte=last_day).order_by('-created_at')
+            events_list = Event.objects.filter(status='approved', created_at__date__gte=first_day, created_at__date__lte=last_day).order_by('-is_pinned', '-created_at')
             title = f"Past Events: {first_day.strftime('%B %Y')}"
             week_start, week_end = first_day, last_day
         except Exception:
@@ -57,7 +57,7 @@ def home_view(request):
             title = "Invalid Month"
             
     else: # Default: This Week (by submission date)
-        events_list = Event.objects.filter(status='approved', created_at__date__gte=week_start, created_at__date__lte=week_end).order_by('-created_at')
+        events_list = Event.objects.filter(status='approved', created_at__date__gte=week_start, created_at__date__lte=week_end).order_by('-is_pinned', '-created_at')
         title = f"This Week ({week_start.strftime('%b %d')}-{week_end.strftime('%d')})"
 
     # 2. Apply Custom Ribbon Filters (Overrides date logic if dates are provided)
