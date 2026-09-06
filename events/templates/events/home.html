@@ -87,6 +87,68 @@
             [style*="grid-template-columns: repeat(2"] { grid-template-columns: 1fr !important; max-width: 500px !important; }
         }
         article[style*="background: linear-gradient"]:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important; }
+                /* --- MOBILE CARD FIX (Side-by-Side Top, Stacked Bottom) --- */
+        @media (max-width: 600px) {
+            
+            /* 1. Give the main white box enough breathing room on mobile */
+            .main-content {
+                padding: 20px 15px !important; 
+            }
+
+        /* --- MOBILE CARD FIX (Narrower & Strictly Inside Box) --- */
+        @media (max-width: 600px) {
+            
+            /* 1. Give the main white box enough breathing room on mobile */
+            .main-content {
+                padding: 20px 12px !important; /* Increased side padding */
+            }
+
+            /* 2. Fix the grid container */
+            [style*="grid-template-columns: repeat(2"] {
+                grid-template-columns: 1fr !important;
+                padding: 0 !important; 
+                gap: 15px !important;
+                width: 100% !important;
+                box-sizing: border-box !important; 
+            }
+
+            /* 3. Make cards NARROWER and centered */
+            article[style*="background: linear-gradient"] {
+                width: 92% !important; /* Reduced from 95% */
+                margin: 0 auto !important; /* Centers the card */
+                box-sizing: border-box !important; 
+                max-width: 340px !important; /* Absolute max width to prevent overflow */
+            }
+
+            /* 4. Keep Top Section Side-by-Side */
+            [style*="display: flex; gap: 15px; padding: 20px 20px 10px 20px;"] {
+                flex-direction: row !important;
+                padding: 12px !important; /* Reduced padding */
+                gap: 10px !important;
+                box-sizing: border-box !important; 
+                align-items: flex-start;
+            }
+
+            /* 5. Smaller Image */
+            [style*="flex: 0 0 120px; width: 120px; height: 120px;"] {
+                width: 140px !important; /* Reduced from 160px */
+                height: 120px !important; /* Reduced from 130px */
+                flex: 0 0 140px !important; /* Match the width */
+                box-sizing: border-box !important; 
+            }
+
+            /* 6. Info section */
+            [style*="flex: 1; display: flex; flex-direction: column;"] {
+                min-width: 0;
+            }
+
+            /* 7. Ensure title and text wrap properly */
+            [style*="margin: 0; font-size: 1.15em"] {
+                font-size: 1.05em !important; /* Slightly smaller title */
+                word-wrap: break-word;
+            }
+        }
     </style>
+    
 
 {% endblock %}
