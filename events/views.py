@@ -144,7 +144,10 @@ def submit_event_view(request):
                 )
             return redirect('submit_success', token=event.secret_edit_token)
     else:
+
+
         form = EventForm()
+
     return render(request, 'events/submit.html', {'form': form})
 
 
@@ -206,8 +209,6 @@ def secret_edit_view(request, token):
         form = EventForm(request.POST, request.FILES, instance=event)
         
         if form.is_valid():
-            print("Form is valid!")
-            print("New text from form:", form.cleaned_data['description'])
 
             # 1. MANUALLY assign new text to PENDING fields only.
             event.pending_title = form.cleaned_data['title']
@@ -228,7 +229,6 @@ def secret_edit_view(request, token):
                 edit_count=event.edit_count + 1  # Increment edit count
             )
             
-            print("Event saved successfully via update()!")
             
             # 2. Handle Photo Deletions
             deleted_ids_str = request.POST.get('deleted_image_ids', '')

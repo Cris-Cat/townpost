@@ -22,7 +22,7 @@ class MultipleFileField(forms.FileField):
 class EventForm(forms.ModelForm):
     images = MultipleFileField(
         required=False, 
-        label="Upload 3 to 5 Photos (JPG, PNG, or WebP, max 5MB each)"
+        label="Upload 1 to 5 Photos (JPG, PNG, or WebP, max 5MB each)"
     )
     consent_given = forms.BooleanField(
         required=True,
@@ -89,8 +89,8 @@ class EventForm(forms.ModelForm):
         if not images:
             return images
             
-        is_edit = self.instance.pk is not None
-        min_photos = 1 if is_edit else 3
+        #minimum of 1 photo to be uploaded on all post
+        min_photos = 1 
         
         if len(images) < min_photos:
             raise ValidationError(f"Please upload at least {min_photos} photos.")

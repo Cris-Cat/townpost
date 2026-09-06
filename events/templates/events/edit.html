@@ -13,14 +13,15 @@
     <!-- Expiry & Remaining Edits Info -->
     <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 25px; text-align: center;">
         <p style="margin: 0 0 5px 0; color: #333; font-size: 0.95em;">⏰ Edit link expires: <strong>{{ event.edit_token_expires_at|date:"M d, Y" }}</strong></p>
-        <p style="margin: 0; color: #333; font-size: 0.95em;">✏️ Remaining edits allowed: <strong style="color: #000000;">{{ remaining_edits }}</strong></p>
+        <p style="margin: 0; color: #333; font-size: 0.95em;">✏️ Remaining edits allowed: <strong style="color: #f1c40f;">{{ remaining_edits }}</strong></p>
     </div>
 
     <form id="edit-form" enctype="multipart/form-data">
         {% csrf_token %}
+        
         <!-- HIDDEN CONSENT CHECKBOX (Required by backend) -->
         <input type="checkbox" id="id_consent_given" name="consent_given" style="display: none;">
-        
+
         <!-- Hidden input to track deleted image IDs for the backend -->
         <input type="hidden" name="deleted_image_ids" id="deleted-image-ids" value="">
 
@@ -175,7 +176,7 @@
     function renderExistingPhotos() {
         existingContainer.innerHTML = '';
         existingData.forEach(img => {
-            if (deletedIds.includes(img.id)) return; // Hide if deleted
+            if (deletedIds.includes(img.id)) return; 
             
             const div = document.createElement('div');
             div.style.position = 'relative';
@@ -251,19 +252,100 @@
         });
     }
 
-    // --- Form Submission (Fetch API for JSON response) ---
+    // --- Real-Time Validation (Visual feedback only) ---
+    const titleRegex = /^[a-zA-Z0-9\s\W]+$/;
+    const descRegex = /^[a-zA-Z0-9\s\n\W]+$/;
+
+    const titleInput = document.getElementById('id_title');
+    const titleCounter = document.getElementById('title-char-count');
+    
+    if (titleInput && titleCounter) {
+        titleCounter.textContent = titleInput.value.length;
+        titleInput.addEventListener('input', function() {
+            const len = this.value.length;
+            titleCounter.textContent = len;
+            if (len > 60) {
+                titleCounter.style.color = '#ef4444';
+                titleCounter.style.fontWeight = 'bold';
+            } else {
+                titleCounter.style.color = '#6b7280';
+                titleCounter.style.fontWeight = 'normal';
+            }
+            this.setCustomValidity('');
+        });
+    }
+
+    const descInput = document.getElementById('id_description');
+    const descCounter = document.getElementById('desc-char-count');
+    
+    if (descInput && descCounter) {
+        descCounter.textContent = descInput.value.length;
+        descInput.addEventListener('input', function() {
+            const chars = this.value.length;
+            descCounter.textContent = chars;
+            if (chars > 700) {
+                descCounter.style.color = '#ef4444';
+                descCounter.style.fontWeight = 'bold';
+            } else {
+                descCounter.style.color = '#6b7280';
+                descCounter.style.fontWeight = 'normal';
+            }
+            this.setCustomValidity('');
+        });
+    }
+
+    // --- Form Submission with Native Tooltip Validation ---
     async function submitEditForm() {
-        // 1. Check the hidden consent box so the backend accepts it
+        // 1. Validate Title
+        const title = titleInput.value.trim();
+        if (title.length > 60) {
+            titleInput.setCustomValidity('Title cannot exceed 60 characters. Current length: ' + title.length);
+            titleInput.reportValidity();
+            closeModal();
+            return;
+        }
+        if (title && !titleRegex.test(title)) {
+            titleInput.setCustomValidity('Title contains invalid characters. Only letters, numbers, spaces, punctuation, and emojis are allowed.');
+            titleInput.reportValidity();
+            closeModal();
+            return;
+        }
+        titleInput.setCustomValidity('');
+
+        // 2. Validate Description
+        const desc = descInput.value.trim();
+        if (desc.length > 700) {
+            descInput.setCustomValidity('Description cannot exceed 700 characters. Current length: ' + desc.length);
+            descInput.reportValidity();
+            closeModal();
+            return;
+        }
+        if (desc && !descRegex.test(desc)) {
+            descInput.setCustomValidity('Description contains invalid characters. Only letters, numbers, spaces, punctuation, and emojis are allowed.');
+            descInput.reportValidity();
+            closeModal();
+            return;
+        }
+        descInput.setCustomValidity('');
+
+        // 3. Check total photo count
+        const totalPhotos = existingData.length - deletedIds.length + newPhotos.length;
+        if (totalPhotos < 1) {
+            alert('Please keep at least 1 photo.');
+            return;
+        }
+        if (totalPhotos > 5) {
+            alert('You can have a maximum of 5 photos.');
+            return;
+        }
         document.getElementById('id_consent_given').checked = true;
-        
+
+        // --- All validations passed - proceed with submission ---
         const form = document.getElementById('edit-form');
         const formData = new FormData(form);
 
-        // Append new photos
         newPhotos.forEach(p => formData.append('images', p.file));
 
-        // Altcha usually injects a hidden input named 'altcha' automatically. 
-        // If it's not in formData, we grab it manually just in case.
         const altchaWidget = document.querySelector('altcha-widget');
         if (altchaWidget && altchaWidget.payload) {
             formData.set('altcha', altchaWidget.payload);
@@ -290,31 +372,6 @@
             alert('Network error. Please try again.');
         }
     }
-
-    // --- Counters ---
-    document.addEventListener('DOMContentLoaded', function() {
-        const titleInput = document.getElementById('id_title');
-        const titleCounter = document.getElementById('title-char-count');
-        if (titleInput && titleCounter) {
-            titleCounter.textContent = titleInput.value.length;
-            titleInput.addEventListener('input', function() {
-                const len = this.value.length;
-                titleCounter.textContent = len;
-                titleCounter.style.color = len > 60 ? '#ef4444' : '#6b7280';
-            });
-        }
-
-        const descInput = document.getElementById('id_description');
-        const descCounter = document.getElementById('desc-char-count');
-        if (descInput && descCounter) {
-            descCounter.textContent = descInput.value.length;
-            descInput.addEventListener('input', function() {
-                const chars = this.value.length;
-                descCounter.textContent = chars;
-                descCounter.style.color = chars > 700 ? '#ef4444' : '#6b7280';
-            });
-        }
-    });
 </script>
 
 <style>

@@ -2,7 +2,7 @@
 <div style="display: flex; flex-direction: column; gap: 15px;">
 
     <!-- LIVE: This Week -->
-    <a href="?view=this_week" class="nav-link {% if request.GET.view == 'this_week' or not request.GET.view %}active{% endif %}" style="font-weight: bold; background: #fef3c7;">
+    <a href="{% url 'home' %}" class="nav-link {% if request.GET.view == 'this_week' or not request.GET.view %}active{% endif %}" style="font-weight: bold; background: #fef3c7;">
         🔥 LIVE: This Week ({{ current_week_start|date:"M j" }}-{{ current_week_end|date:"j" }})
     </a>
 

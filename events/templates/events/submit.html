@@ -8,17 +8,20 @@
     
     <form method="POST" enctype="multipart/form-data" id="event-form">
         {% csrf_token %}
-        <!-- HIDDEN CONSENT CHECKBOX (Required by backend) -->
-        <input type="checkbox" id="id_consent_given" name="consent_given" style="display: none;">
         
-        <!-- Title with Counter -->
+        <!-- Hidden Consent Checkbox -->
+        <input type="checkbox" id="id_consent_given" name="consent_given" style="display: none;">
+
+        <!-- Title -->
         <div style="margin-bottom: 20px;">
             <label for="id_title" style="font-weight: bold; display: block; margin-bottom: 8px; color: #333;">{{ form.title.label }}</label>
             {{ form.title }}
             <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px; text-align: right;">
                 <span id="title-char-count">0</span> / 60 characters
             </div>
-            {{ form.title.errors }}
+            {% if form.title.errors %}
+                {{ form.title.errors }}
+            {% endif %}
         </div>
 
         <!-- Category -->
@@ -35,29 +38,31 @@
             {{ form.start_date.errors }}
         </div>
 
-        <!-- Description with Counter -->
+        <!-- Description -->
         <div style="margin-bottom: 20px;">
             <label for="id_description" style="font-weight: bold; display: block; margin-bottom: 8px; color: #333;">{{ form.description.label }}</label>
             {{ form.description }}
             <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px; text-align: right;">
                 <span id="desc-char-count">0</span> / 700 characters
             </div>
-            {{ form.description.errors }}
+            {% if form.description.errors %}
+                {{ form.description.errors }}
+            {% endif %}
         </div>
 
         <!-- Images Section with Preview -->
         <div style="margin-bottom: 20px;">
             <label for="id_images" style="font-weight: bold; display: block; margin-bottom: 8px; color: #333;">{{ form.images.label }}</label>
             
-            <!-- 1. Hide the ugly native input -->
+            <!-- Hide the native input -->
             <input type="file" name="images" id="id_images" multiple accept="image/jpeg,image/png,image/webp" style="display: none;">
             
-            <!-- 2. Add this beautiful custom button (matches your Submit button) -->
-            <label for="id_images" style="display: block; width: 40%; padding: 10px; background: #f1c40f; color: #333; border-radius: 6px; font-weight: bold; text-align: center; cursor: pointer; box-sizing: border-box; transition: background 0.2s;">
+            <!-- Custom button -->
+            <label for="id_images" style="display: block; width: 100%; padding: 12px; background: #f1c40f; color: #333; border-radius: 6px; font-weight: bold; text-align: center; cursor: pointer; box-sizing: border-box; transition: background 0.2s;">
                 📸 Choose Photos
             </label>
 
-            <div style="font-size: 0.85em; color: #6b7280; margin-top: 8px; text-align: left;">Minimum 3 photos, maximum 5 photos.</div>
+            <div style="font-size: 0.85em; color: #6b7280; margin-top: 8px; text-align: center;">Minimum 1 photo, maximum 5 photos.</div>
             
             <!-- Photo Preview Container -->
             <div id="photo-preview-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 15px;">
@@ -129,13 +134,13 @@
             </div>
         {% endif %}
 
+        <!-- Hidden Submit Button for Altcha -->
+        <button type="submit" id="hidden-submit-btn" style="display: none;"></button>
+
         <!-- Main Submit Button (Triggers Modal) -->
         <button type="button" onclick="openModal()" style="width: 100%; padding: 14px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: background 0.2s;">
             Review & Submit
         </button>
-                <!-- HIDDEN SUBMIT BUTTON (Altcha needs this to intercept the click) -->
-        <button type="submit" id="hidden-submit-btn" style="display: none;"></button>
-
     </form>
 </div>
 
@@ -159,26 +164,25 @@
 
 <!-- Scripts & Styles -->
 <script>
-    // Modal Logic
+    // --- Modal Logic ---
     function openModal() { document.getElementById('consent-modal').style.display = 'flex'; }
     function closeModal() { document.getElementById('consent-modal').style.display = 'none'; }
     
-    // Location Toggle Logic
+    // --- Location Toggle Logic ---
     function toggleLocation() {
         var section = document.getElementById('location-section');
         var checkbox = document.getElementById('location-toggle');
         section.style.display = checkbox.checked ? 'block' : 'none';
     }
 
-    // Photo Preview and Delete Logic
+    // --- Photo Preview and Delete Logic ---
     const photoPreviewContainer = document.getElementById('photo-preview-container');
     const fileInput = document.getElementById('id_images');
-    let uploadedPhotos = []; // Store photo objects {id, file, preview}
+    let uploadedPhotos = []; 
 
     fileInput.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
         
-        // Check total count (existing + new)
         if (uploadedPhotos.length + files.length > 5) {
             alert('You can upload a maximum of 5 photos.');
             return;
@@ -186,28 +190,20 @@
         
         files.forEach(file => {
             if (!file.type.startsWith('image/')) return;
-            
             const reader = new FileReader();
             reader.onload = function(e) {
-                const photo = {
-                    id: Date.now() + Math.random(),
-                    file: file,
-                    preview: e.target.result
-                };
+                const photo = { id: Date.now() + Math.random(), file: file, preview: e.target.result };
                 uploadedPhotos.push(photo);
                 renderPhotos();
             };
             reader.readAsDataURL(file);
         });
-        
-        // Clear the input so the same file can be selected again if needed
         fileInput.value = '';
     });
 
     function renderPhotos() {
         photoPreviewContainer.innerHTML = '';
-        
-        uploadedPhotos.forEach(photo => {
+        uploadedPhotos.forEach((photo, index) => {
             const photoDiv = document.createElement('div');
             photoDiv.style.position = 'relative';
             photoDiv.style.borderRadius = '6px';
@@ -223,7 +219,7 @@
             
             const deleteBtn = document.createElement('button');
             deleteBtn.innerHTML = '✕';
-            deleteBtn.onclick = function() { deletePhoto(photo.id); };
+            deleteBtn.onclick = function() { deletePhoto(index); };
             deleteBtn.style.position = 'absolute';
             deleteBtn.style.top = '5px';
             deleteBtn.style.right = '5px';
@@ -246,64 +242,130 @@
         });
     }
 
-    function deletePhoto(id) {
-        uploadedPhotos = uploadedPhotos.filter(p => p.id !== id);
+    function deletePhoto(index) {
+        uploadedPhotos.splice(index, 1);
         renderPhotos();
     }
 
-    // Form submission - attach photos to FormData
-    const originalSubmit = document.getElementById('event-form').submit;
-    document.getElementById('event-form').addEventListener('submit', function(e) {
-        // Clear existing files
-        const dataTransfer = new DataTransfer();
-        uploadedPhotos.forEach(photo => {
-            dataTransfer.items.add(photo.file);
-        });
-        fileInput.files = dataTransfer.files;
-    });
-    // --- THE HANDOVER FIX ---
-    function confirmAndSubmit() {
-        // 1. Check the hidden consent box so the backend accepts it
-        document.getElementById('id_consent_given').checked = true;
+    // --- Real-Time Validation (Visual feedback only, no alerts) ---
+    const titleRegex = /^[a-zA-Z0-9\s\W]+$/;
+    const descRegex = /^[a-zA-Z0-9\s\n\W]+$/;
 
-        // 2. Re-attach the previewed photos to the hidden file input
-        const dataTransfer = new DataTransfer();
-        uploadedPhotos.forEach(photo => {
-            dataTransfer.items.add(photo.file);
+    // Title Validation
+    const titleInput = document.getElementById('id_title');
+    const titleCounter = document.getElementById('title-char-count');
+    
+    if (titleInput && titleCounter) {
+        titleCounter.textContent = titleInput.value.length;
+        
+        titleInput.addEventListener('input', function() {
+            const len = this.value.length;
+            titleCounter.textContent = len;
+            
+            // Visual feedback only (turns red if over limit)
+            if (len > 60) {
+                titleCounter.style.color = '#ef4444';
+                titleCounter.style.fontWeight = 'bold';
+            } else {
+                titleCounter.style.color = '#6b7280';
+                titleCounter.style.fontWeight = 'normal';
+            }
+            
+            // Clear any previous native validation errors while typing
+            this.setCustomValidity('');
         });
-        fileInput.files = dataTransfer.files;
+    }
+
+    // Description Validation
+    const descInput = document.getElementById('id_description');
+    const descCounter = document.getElementById('desc-char-count');
+    
+    if (descInput && descCounter) {
+        descCounter.textContent = descInput.value.length;
+        
+        descInput.addEventListener('input', function() {
+            const chars = this.value.length;
+            descCounter.textContent = chars;
+            
+            if (chars > 700) {
+                descCounter.style.color = '#ef4444';
+                descCounter.style.fontWeight = 'bold';
+            } else {
+                descCounter.style.color = '#6b7280';
+                descCounter.style.fontWeight = 'normal';
+            }
+            this.setCustomValidity('');
+        });
+    }
+
+    // --- Final Form Validation Before Submit (Shows native tooltip like screenshot) ---
+    function confirmAndSubmit() {
+        // 1. Validate Title
+        const title = titleInput.value.trim();
+        if (title.length > 60) {
+            titleInput.setCustomValidity('Title cannot exceed 60 characters. Current length: ' + title.length);
+            titleInput.reportValidity(); // Shows the native tooltip
+            closeModal();
+            return; // Stop submission
+        }
+        if (title && !titleRegex.test(title)) {
+            titleInput.setCustomValidity('Title contains invalid characters. Only letters, numbers, spaces, punctuation, and emojis are allowed.');
+            titleInput.reportValidity();
+            closeModal();
+            return;
+        }
+        titleInput.setCustomValidity(''); // Clear if valid
+
+        // 2. Validate Description
+        const desc = descInput.value.trim();
+        if (desc.length > 700) {
+            descInput.setCustomValidity('Description cannot exceed 700 characters. Current length: ' + desc.length);
+            descInput.reportValidity();
+            closeModal();
+            return;
+        }
+        if (desc && !descRegex.test(desc)) {
+            descInput.setCustomValidity('Description contains invalid characters. Only letters, numbers, spaces, punctuation, and emojis are allowed.');
+            descInput.reportValidity();
+            closeModal();
+            return;
+        }
+        descInput.setCustomValidity(''); // Clear if valid
+
+        // 3. Check photo count
+        if (uploadedPhotos.length > 5) {
+            alert('You can upload a maximum of 5 photos.');
+            return;
+        }
+        if (uploadedPhotos.length < 1) {
+            alert('Please upload at least 1 photo.');
+            return;
+        }
+
+        // --- All validations passed - proceed with submission ---
+        
+        // 1. Force the hidden consent checkbox to be checked
+        const consentBox = document.getElementById('id_consent_given');
+        if (consentBox) consentBox.checked = true;
+
+        // 2. Attach the previewed photos to the hidden file input
+        if (fileInput) {
+            const dataTransfer = new DataTransfer();
+            uploadedPhotos.forEach(photo => dataTransfer.items.add(photo.file));
+            fileInput.files = dataTransfer.files;
+        }
 
         // 3. Close the modal
         closeModal();
 
-        // 4. Finally, submit the form to the backend
-        document.getElementById('hidden-submit-btn').click(); 
+        // 4. Click the hidden button (Triggers Altcha and Native Submit)
+        const hiddenBtn = document.getElementById('hidden-submit-btn');
+        if (hiddenBtn) {
+            hiddenBtn.click();
+        } else {
+            document.getElementById('event-form').submit();
+        }
     }
-    // -------------------------
-    // Counters
-    document.addEventListener('DOMContentLoaded', function() {
-        const titleInput = document.getElementById('id_title');
-        const titleCounter = document.getElementById('title-char-count');
-        if (titleInput && titleCounter) {
-            titleCounter.textContent = titleInput.value.length;
-            titleInput.addEventListener('input', function() {
-                const len = this.value.length;
-                titleCounter.textContent = len;
-                titleCounter.style.color = len > 60 ? '#ef4444' : '#6b7280';
-            });
-        }
-
-        const descInput = document.getElementById('id_description');
-        const descCounter = document.getElementById('desc-char-count');
-        if (descInput && descCounter) {
-            descCounter.textContent = descInput.value.length;
-            descInput.addEventListener('input', function() {
-                const chars = this.value.length;
-                descCounter.textContent = chars;
-                descCounter.style.color = chars > 700 ? '#ef4444' : '#6b7280';
-            });
-        }
-    });
 </script>
 
 <style>
