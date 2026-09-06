@@ -1,53 +1,29 @@
-# File: events/forms.py
-
+import re
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import Event
 
 # --- CUSTOM WIDGET AND FIELD FOR MULTIPLE FILES ---
 class MultipleFileInput(forms.FileInput):
-    """
-    Custom Widget for multiple file selection.
-    Overrides value_from_datadict to return a list of files.
-    """
     allow_multiple_selected = True
-
     def value_from_datadict(self, data, files, name):
-        # CRITICAL: Return all files uploaded under this field name as a list
         return files.getlist(name)
 
-
 class MultipleFileField(forms.FileField):
-    """
-    Custom Field to handle multiple file uploads.
-    Overrides clean() to accept a list of files instead of a single file.
-    """
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('widget', MultipleFileInput())
         super().__init__(*args, **kwargs)
 
     def clean(self, data, initial=None):
-        # data is now a list of files (from value_from_datadict)
-        # We skip the default single-file validation and just return the list
-        # so our custom clean_images() can validate them.
         if not data and self.required:
             raise ValidationError(self.error_messages['required'], code='required')
         return data
 
-
 class EventForm(forms.ModelForm):
-    """
-    Event Submission Form (Phase 2)
-    -------------------------------
-    Purpose: Captures event details, multiple photos, and legal consent.
-    """
-    
-    # Use our custom MultipleFileField instead of forms.FileField
     images = MultipleFileField(
         required=False, 
         label="Upload 3 to 5 Photos (JPG, PNG, or WebP, max 5MB each)"
     )
-    
     consent_given = forms.BooleanField(
         required=True,
         error_messages={'required': 'You must confirm ownership and consent to proceed.'},
@@ -56,51 +32,60 @@ class EventForm(forms.ModelForm):
 
     class Meta:
         model = Event
-        # ADD the new location fields to the list
         fields = [
             'title', 'category', 'description', 'start_date', 
             'country', 'city', 'street_address', 'zip_code', 'maps_url', 'event_url',
             'consent_given'
         ]
-        
         widgets = {
+            'title': forms.TextInput(attrs={
+                'id': 'id_title', 
+                'maxlength': 60,
+                'placeholder': 'Enter event title (max 60 characters)'
+            }),
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'description': forms.Textarea(attrs={
                 'rows': 6, 
-                'placeholder': 'Tell us about your event... (Max 500 words)',
+                'placeholder': 'Tell us about your event... (Max 700 char)',
                 'id': 'id_description' 
             }),
-            # Add basic styling to the new fields
             'street_address': forms.TextInput(attrs={'placeholder': 'e.g. Friedrichstraße 123'}),
             'zip_code': forms.TextInput(attrs={'placeholder': 'e.g. 10117'}),
             'maps_url': forms.URLInput(attrs={'placeholder': 'https://maps.google.com/...'}),
-            'event_url': forms.URLInput(attrs={'placeholder': 'https://eventbrite.com/...'}),
-
+            'event_url': forms.URLInput(attrs={'placeholder': 'https://evente.com/...'}),
         }
 
+    def clean_title(self):
+        title = self.cleaned_data.get('title', '').strip()
+        
+        # 1. Limit to 60 characters
+        if len(title) > 60:
+            raise ValidationError("Title cannot exceed 60 characters.")
+            
+        # 2. Sanitize with Regex (Letters, numbers, spaces, punctuation, symbols, emojis)
+        # \W matches any non-word character (covers punctuation, symbols, and emojis)
+        if not re.match(r'^[a-zA-Z0-9\s\W]+$', title):
+            raise ValidationError("Title contains invalid characters. Only letters, numbers, punctuation, and emojis are allowed.")
+            
+        return title
+
     def clean_description(self):
-        """
-        Validates that the description does not exceed 500 words.
-        """
-        description = self.cleaned_data.get('description')
+        description = self.cleaned_data.get('description', '').strip()
+        
         if description:
-            word_count = len(description.split())
-            if word_count > 500:
-                raise ValidationError(f"Description must be 500 words or less. You entered {word_count} words.")
+            # 1. Character count limit (Changed from 500 words to 700 characters)
+            char_count = len(description)
+            if char_count > 700:
+                raise ValidationError(f"Description must be 700 characters or less. You entered {char_count} characters.")
+                
+            # 2. Sanitize with Regex (Allows newlines \n for paragraphs)
+            if not re.match(r'^[a-zA-Z0-9\s\n\W]+$', description):
+                raise ValidationError("Description contains invalid characters. Only letters, numbers, punctuation, and emojis are allowed.")
+                
         return description
 
-
-
-# File: events/forms.py
-
     def clean_images(self):
-        """
-        Validates the uploaded images.
-        Edge Case: In Edit mode, if uploading new photos, minimum is 1.
-        """
         images = self.files.getlist('images')
-        
-        # If no new images are provided, skip validation (they might just be editing text)
         if not images:
             return images
             
@@ -113,12 +98,11 @@ class EventForm(forms.ModelForm):
             raise ValidationError("You can upload a maximum of 5 photos.")
             
         allowed_types = ['image/jpeg', 'image/png', 'image/webp']
-        max_size = 5 * 1024 * 1024  # 5MB in bytes
+        max_size = 5 * 1024 * 1024  # 5MB
         
         for img in images:
             if img.content_type not in allowed_types:
                 raise ValidationError(f"File '{img.name}' is not a supported format. Please use JPG, PNG, or WebP.")
-            
             if img.size > max_size:
                 raise ValidationError(f"File '{img.name}' is too large. Maximum size is 5MB.")
                 

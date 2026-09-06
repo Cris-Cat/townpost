@@ -258,11 +258,15 @@ def secret_edit_view(request, token):
         {'id': img.id, 'name': img.image.name.split('/')[-1], 'preview': img.image.url, 'size': 0, 'isExisting': True}
         for img in event.images.all()
     ]
-        
+    remaining_edits = max(0, 5 - event.edit_count)
+
     return render(request, 'events/edit.html', {
         'form': form, 
         'event': event,
-        'existing_images_data': existing_images_data
+        'existing_images_data': existing_images_data,
+        'remaining_edits': remaining_edits,
+
+        
     })
 
 
