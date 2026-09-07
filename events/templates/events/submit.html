@@ -3,6 +3,8 @@
 {% block title %}Submit an Event - CityBoard{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <div style="max-width: 800px; margin: 0 auto; padding: 30px 20px; background: rgba(255, 255, 255, 0.95); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
     <h1 style="color: #333; margin-bottom: 25px; text-align: center;">Submit an Event</h1>
     
@@ -391,4 +393,11 @@
         resize: vertical;
     }
 </style>
+<script>
+    // Force the start date calendar to always start on Monday (1 = Monday)
+    flatpickr("#id_start_date", {
+        dateFormat: "Y-m-d",
+        locale: { firstDayOfWeek: 1 } 
+    });
+</script>
 {% endblock %}

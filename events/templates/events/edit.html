@@ -2,7 +2,8 @@
 {% block title %}Edit Event - CityBoard{% endblock %}
 
 {% block content %}
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <!-- Pass existing images data to JavaScript safely -->
 {{ existing_images_data|json_script:"existing-images-data" }}
 
@@ -390,4 +391,11 @@
     }
     #id_description { background: #fffdf5; min-height: 120px; resize: vertical; }
 </style>
+<script>
+    // Force the start date calendar to always start on Monday (1 = Monday)
+    flatpickr("#id_start_date", {
+        dateFormat: "Y-m-d",
+        locale: { firstDayOfWeek: 1 } 
+    });
+</script>
 {% endblock %}
