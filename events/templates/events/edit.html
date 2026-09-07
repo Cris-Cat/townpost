@@ -2,8 +2,7 @@
 {% block title %}Edit Event - CityBoard{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <!-- Pass existing images data to JavaScript safely -->
 {{ existing_images_data|json_script:"existing-images-data" }}
 
@@ -17,10 +16,10 @@
         <p style="margin: 0; color: #333; font-size: 0.95em;">✏️ Remaining edits allowed: <strong style="color: #f1c40f;">{{ remaining_edits }}</strong></p>
     </div>
 
-    <form id="edit-form" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" id="edit-form">
         {% csrf_token %}
         
-        <!-- HIDDEN CONSENT CHECKBOX (Required by backend) -->
+        <!-- HIDDEN CONSENT CHECKBOX (Required for validation) -->
         <input type="checkbox" id="id_consent_given" name="consent_given" style="display: none;">
 
         <!-- Hidden input to track deleted image IDs for the backend -->
@@ -33,18 +32,33 @@
             <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px; text-align: right;">
                 <span id="title-char-count">0</span> / 60 characters
             </div>
+            {% if form.title.errors %}{{ form.title.errors }}{% endif %}
         </div>
 
         <!-- Category -->
         <div style="margin-bottom: 20px;">
             <label for="id_category" style="font-weight: bold; display: block; margin-bottom: 8px; color: #333;">{{ form.category.label }}</label>
             {{ form.category }}
+            {{ form.category.errors }}
         </div>
 
-        <!-- Start Date -->
+        <!-- Start Date & Multi-day Event -->
         <div style="margin-bottom: 20px;">
             <label for="id_start_date" style="font-weight: bold; display: block; margin-bottom: 8px; color: #333;">{{ form.start_date.label }}</label>
-            {{ form.start_date }}
+            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">{{ form.start_date }}</div>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="id_is_multi_day" name="is_multi_day" style="width: 18px; height: 18px; cursor: pointer; margin: 0;">
+                    <span style="font-weight: 600; color: #333; font-size: 0.95em;">Multi-day Event</span>
+                </label>
+            </div>
+            <div id="end-date-container" style="margin-top: 10px; display: none;">
+                <label for="id_end_date" style="font-weight: bold; display: block; margin-bottom: 5px; color: #333; font-size: 0.95em;">End Date</label>
+                {{ form.end_date }}
+                <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px;">Maximum 14 days from start date</div>
+            </div>
+            {% if form.start_date.errors %}{{ form.start_date.errors }}{% endif %}
+            {% if form.end_date.errors %}{{ form.end_date.errors }}{% endif %}
         </div>
 
         <!-- Description -->
@@ -54,9 +68,10 @@
             <div style="font-size: 0.85em; color: #6b7280; margin-top: 5px; text-align: right;">
                 <span id="desc-char-count">0</span> / 700 characters
             </div>
+            {% if form.description.errors %}{{ form.description.errors }}{% endif %}
         </div>
 
-        <!-- Photos Section -->
+        <!-- Images Section -->
         <div style="margin-bottom: 20px;">
             <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #333;">{{ form.images.label }}</label>
             <p style="font-size: 0.85em; color: #6b7280; margin-top: 0; margin-bottom: 10px;">Click ✕ to remove existing photos. Upload new ones below. Min 1 photo required.</p>
@@ -76,6 +91,7 @@
             <div id="new-photos-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 15px;">
                 <!-- Loaded via JS -->
             </div>
+            {% if form.images.errors %}{{ form.images.errors }}{% endif %}
         </div>
 
         <!-- Location Toggle -->
@@ -92,21 +108,25 @@
                 <div>
                     <label for="id_country" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.country.label }}</label>
                     {{ form.country }}
+                    {{ form.country.errors }}
                 </div>
                 <div>
                     <label for="id_city" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.city.label }}</label>
                     {{ form.city }}
+                    {{ form.city.errors }}
                 </div>
             </div>
 
             <div style="margin-bottom: 15px;">
                 <label for="id_maps_url" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.maps_url.label }}</label>
                 {{ form.maps_url }}
+                {{ form.maps_url.errors }}
             </div>
 
             <div style="margin-bottom: 0;">
                 <label for="id_event_url" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.event_url.label }}</label>
                 {{ form.event_url }}
+                {{ form.event_url.errors }}
             </div>
         </div>
 
@@ -115,8 +135,17 @@
             <altcha-widget challengeurl="{% url 'altcha_challenge' %}"></altcha-widget>
         </div>
 
-        <!-- Review Button -->
-        <button type="button" onclick="openModal()" style="width: 100%; padding: 14px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+            <div style="background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                {% for error in form.non_field_errors %}
+                    <p style="margin: 0;">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Main Submit Button (Triggers Modal) -->
+        <button type="button" onclick="openModal()" style="width: 100%; padding: 14px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer; transition: background 0.2s;">
             Review Changes
         </button>
     </form>
@@ -135,18 +164,18 @@
         </ul>
         <div style="display: flex; gap: 15px; margin-top: 25px; justify-content: flex-end;">
             <button type="button" onclick="closeModal()" style="padding: 10px 20px; background: #e5e7eb; color: #333; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancel</button>
-            <button type="button" onclick="submitEditForm()" style="padding: 10px 20px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">I Agree & Save</button>
+            <button type="button" onclick="confirmAndSubmit()" style="padding: 10px 20px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">I Agree & Save</button>
         </div>
     </div>
 </div>
 
-<!-- Success Modal -->
+<!-- Success Modal (Added Back) -->
 <div id="success-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
     <div style="background: white; padding: 30px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
         <div style="font-size: 3em; margin-bottom: 10px;">✅</div>
         <h2 style="color: #333; margin-top: 0;">Changes Submitted!</h2>
         <p style="color: #4b5563; line-height: 1.6;">Your changes have been submitted for review. An admin will approve them shortly.</p>
-        <button type="button" onclick="window.location.href='{% url 'home' %}'" style="margin-top: 20px; padding: 10px 20px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">OK</button>
+        <button type="button" onclick="window.location.href='/'" style="margin-top: 20px; padding: 10px 20px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%;">OK</button>
     </div>
 </div>
 
@@ -253,83 +282,90 @@
         });
     }
 
-    // --- Real-Time Validation (Visual feedback only) ---
-    const titleRegex = /^[a-zA-Z0-9\s\W]+$/;
-    const descRegex = /^[a-zA-Z0-9\s\n\W]+$/;
+    // --- Multi-day Event Logic ---
+    const startDateInput = document.getElementById('id_start_date');
+    const multiDayCheckbox = document.getElementById('id_is_multi_day');
+    const endDateContainer = document.getElementById('end-date-container');
+    const endDateInput = document.getElementById('id_end_date');
 
+    if (multiDayCheckbox && endDateContainer && startDateInput && endDateInput) {
+        multiDayCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                if (!startDateInput.value) {
+                    startDateInput.setCustomValidity('Please choose a start date first.');
+                    startDateInput.reportValidity();
+                    this.checked = false;
+                    return;
+                }
+                startDateInput.setCustomValidity('');
+                endDateContainer.style.display = 'block';
+                endDateInput.value = startDateInput.value;
+                
+                const startDate = new Date(startDateInput.value);
+                const maxEndDate = new Date(startDate);
+                maxEndDate.setDate(startDate.getDate() + 14);
+                endDateInput.setAttribute('max', maxEndDate.toISOString().split('T')[0]);
+            } else {
+                endDateContainer.style.display = 'none';
+                endDateInput.value = '';
+            }
+        });
+
+        startDateInput.addEventListener('change', function() {
+            if (this.value && multiDayCheckbox.checked) {
+                const startDate = new Date(this.value);
+                const maxEndDate = new Date(startDate);
+                maxEndDate.setDate(startDate.getDate() + 14);
+                endDateInput.setAttribute('max', maxEndDate.toISOString().split('T')[0]);
+                if (endDateInput.value && new Date(endDateInput.value) > maxEndDate) {
+                    endDateInput.value = maxEndDate.toISOString().split('T')[0];
+                }
+            }
+        });
+    }
+
+    // --- Character Counters ---
     const titleInput = document.getElementById('id_title');
     const titleCounter = document.getElementById('title-char-count');
-    
     if (titleInput && titleCounter) {
         titleCounter.textContent = titleInput.value.length;
         titleInput.addEventListener('input', function() {
-            const len = this.value.length;
-            titleCounter.textContent = len;
-            if (len > 60) {
-                titleCounter.style.color = '#ef4444';
-                titleCounter.style.fontWeight = 'bold';
-            } else {
-                titleCounter.style.color = '#6b7280';
-                titleCounter.style.fontWeight = 'normal';
-            }
-            this.setCustomValidity('');
+            titleCounter.textContent = this.value.length;
+            titleCounter.style.color = this.value.length > 60 ? '#ef4444' : '#6b7280';
         });
     }
 
     const descInput = document.getElementById('id_description');
     const descCounter = document.getElementById('desc-char-count');
-    
     if (descInput && descCounter) {
         descCounter.textContent = descInput.value.length;
         descInput.addEventListener('input', function() {
-            const chars = this.value.length;
-            descCounter.textContent = chars;
-            if (chars > 700) {
-                descCounter.style.color = '#ef4444';
-                descCounter.style.fontWeight = 'bold';
-            } else {
-                descCounter.style.color = '#6b7280';
-                descCounter.style.fontWeight = 'normal';
-            }
-            this.setCustomValidity('');
+            descCounter.textContent = this.value.length;
+            descCounter.style.color = this.value.length > 700 ? '#ef4444' : '#6b7280';
         });
     }
 
-    // --- Form Submission with Native Tooltip Validation ---
-    async function submitEditForm() {
-        // 1. Validate Title
-        const title = titleInput.value.trim();
-        if (title.length > 60) {
-            titleInput.setCustomValidity('Title cannot exceed 60 characters. Current length: ' + title.length);
-            titleInput.reportValidity();
-            closeModal();
-            return;
-        }
-        if (title && !titleRegex.test(title)) {
-            titleInput.setCustomValidity('Title contains invalid characters. Only letters, numbers, spaces, punctuation, and emojis are allowed.');
+    // --- Final Validation and AJAX Submit ---
+    async function confirmAndSubmit() {
+        // Validate Title
+        if (titleInput.value.length > 60) {
+            titleInput.setCustomValidity('Title cannot exceed 60 characters.');
             titleInput.reportValidity();
             closeModal();
             return;
         }
         titleInput.setCustomValidity('');
 
-        // 2. Validate Description
-        const desc = descInput.value.trim();
-        if (desc.length > 700) {
-            descInput.setCustomValidity('Description cannot exceed 700 characters. Current length: ' + desc.length);
-            descInput.reportValidity();
-            closeModal();
-            return;
-        }
-        if (desc && !descRegex.test(desc)) {
-            descInput.setCustomValidity('Description contains invalid characters. Only letters, numbers, spaces, punctuation, and emojis are allowed.');
+        // Validate Description
+        if (descInput.value.length > 700) {
+            descInput.setCustomValidity('Description cannot exceed 700 characters.');
             descInput.reportValidity();
             closeModal();
             return;
         }
         descInput.setCustomValidity('');
 
-        // 3. Check total photo count
+        // Check total photo count
         const totalPhotos = existingData.length - deletedIds.length + newPhotos.length;
         if (totalPhotos < 1) {
             alert('Please keep at least 1 photo.');
@@ -339,18 +375,23 @@
             alert('You can have a maximum of 5 photos.');
             return;
         }
-        document.getElementById('id_consent_given').checked = true;
 
-        // --- All validations passed - proceed with submission ---
+        // Prepare form data for AJAX submission
+        document.getElementById('id_consent_given').checked = true;
+        const dataTransfer = new DataTransfer();
+        newPhotos.forEach(photo => dataTransfer.items.add(photo.file));
+        fileInput.files = dataTransfer.files;
+
         const form = document.getElementById('edit-form');
         const formData = new FormData(form);
 
-        newPhotos.forEach(p => formData.append('images', p.file));
-
+        // Attach Altcha payload if available
         const altchaWidget = document.querySelector('altcha-widget');
         if (altchaWidget && altchaWidget.payload) {
             formData.set('altcha', altchaWidget.payload);
         }
+
+        closeModal(); // Close the consent modal before submitting
 
         try {
             const response = await fetch(window.location.href, {
@@ -360,16 +401,24 @@
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                closeModal();
-                document.getElementById('success-modal').style.display = 'flex';
+
+            // Check if backend returned JSON (success) or HTML (validation errors)
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                if (data.success) {
+                    // Show success modal
+                    document.getElementById('success-modal').style.display = 'flex';
+                } else {
+                    alert('Error: ' + (data.error || 'Please check the form and try again.'));
+                    window.location.reload(); // Reload to show Django errors
+                }
             } else {
-                alert('Error saving changes. Please check the form and try again.');
+                // If backend returned HTML (e.g., form validation errors), reload to show them
+                window.location.reload();
             }
         } catch (error) {
+            console.error('Submission error:', error);
             alert('Network error. Please try again.');
         }
     }
@@ -391,11 +440,4 @@
     }
     #id_description { background: #fffdf5; min-height: 120px; resize: vertical; }
 </style>
-<script>
-    // Force the start date calendar to always start on Monday (1 = Monday)
-    flatpickr("#id_start_date", {
-        dateFormat: "Y-m-d",
-        locale: { firstDayOfWeek: 1 } 
-    });
-</script>
 {% endblock %}

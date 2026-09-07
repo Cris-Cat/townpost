@@ -112,23 +112,35 @@ def info_board_view(request):
     
     return render(request, 'events/info_board.html', {'events': events})
 
+import json
+from django.shortcuts import render, redirect
+from django.conf import settings
+# ... keep your other imports like EventForm, EventImage, process_and_strip_exif, verify_solution ...
+
 def submit_event_view(request):
     """
     Submit Event View
     """
     if request.method == 'POST':
-                # --- ALTCHA VERIFICATION ---
+        # --- ALTCHA VERIFICATION ---
         altcha_payload = request.POST.get('altcha', '')
+
         if not altcha_payload:
             form = EventForm(request.POST, request.FILES)
             form.add_error(None, 'Captcha verification failed. Please try again.')
-            return render(request, 'events/submit.html', {'form': form})
+            return render(request, 'events/submit.html', {
+                'form': form,
+                'city_data_json': json.dumps(form.city_data)
+            })
         
         is_valid = verify_solution(altcha_payload, settings.ALTCHA_HMAC_SECRET)
         if not is_valid:
             form = EventForm(request.POST, request.FILES)
             form.add_error(None, 'Captcha verification failed. Please refresh the page and try again.')
-            return render(request, 'events/submit.html', {'form': form})
+            return render(request, 'events/submit.html', {
+                'form': form,
+                'city_data_json': json.dumps(form.city_data)
+            })
         # --- END ALTCHA VERIFICATION ---
 
         form = EventForm(request.POST, request.FILES)
@@ -143,13 +155,24 @@ def submit_event_view(request):
                     order=index,
                 )
             return redirect('submit_success', token=event.secret_edit_token)
+        else:
+            print("SUBMIT FORM REJECTED! ERRORS:", form.errors) 
+
+
+        # If the form is invalid (e.g. title too long), reload page with errors AND city data
+            return render(request, 'events/submit.html', {
+                'form': form,
+                'city_data_json': json.dumps(form.city_data)
+            })
+
     else:
-
-
+        # GET request: Show empty form with city data
         form = EventForm()
 
-    return render(request, 'events/submit.html', {'form': form})
-
+    return render(request, 'events/submit.html', {
+        'form': form,
+        'city_data_json': json.dumps(form.city_data)
+    })
 
 def submit_success_view(request, token):
     """
@@ -214,7 +237,8 @@ def secret_edit_view(request, token):
             event.pending_title = form.cleaned_data['title']
             event.pending_description = form.cleaned_data['description']
             event.pending_start_date = form.cleaned_data['start_date']
-            
+            event.pending_country = form.cleaned_data.get('country') 
+            event.pending_city = form.cleaned_data.get('city')
             # Set status to pending
             event.status = 'pending'
             

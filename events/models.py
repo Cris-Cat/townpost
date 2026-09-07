@@ -43,41 +43,7 @@ class Category(models.Model):
 
 
 
-# --- NEW MODELS FOR LOCATION ---
-class Country(models.Model):
-    """
-    Country Model
-    -------------
-    Purpose: Stores countries. Admin can add more via Django admin.
-    """
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(max_length=50, unique=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
-
-class City(models.Model):
-    """
-    City Model
-    ------------
-    Purpose: Stores cities linked to a country.
-    """
-    name = models.CharField(max_length=100, unique=True)
-    country = models.ForeignKey(Country, on_delete=models.PROTECT, related_name='cities')
-    slug = models.SlugField(max_length=100, unique=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
 
 
 
@@ -109,13 +75,16 @@ class Event(models.Model):
     pending_title = models.CharField(max_length=200, blank=True, default="")
     pending_description = models.TextField(blank=True, default="")
     pending_start_date = models.DateField(blank=True, null=True)
-    
+    pending_country = models.CharField(max_length=100, blank=True, default="")
+    pending_city = models.CharField(max_length=100, blank=True, default="")
+
     # PROTECT prevents deleting a Category if it has Events attached to it
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='events')
     is_pinned = models.BooleanField(default=False, help_text="If checked, this event will always appear at the top of the list.")
     # Location details
-    country = models.ForeignKey(Country, on_delete=models.PROTECT, blank=True, null=True, help_text="Select country")
-    city = models.ForeignKey(City, on_delete=models.PROTECT, blank=True, null=True, help_text="Select city")
+    # Location details (Changed to CharField to use JSON file)
+    country = models.CharField(max_length=100, blank=True, default="", help_text="Select country")
+    city = models.CharField(max_length=100, blank=True, default="", help_text="Select city")
     street_address = models.CharField(max_length=200, blank=True, default="", help_text="Street and house number")
     zip_code = models.CharField(max_length=20, blank=True, default="", help_text="Postal/Zip code")
     maps_url = models.URLField(blank=True, default="", help_text="Google Maps link (optional)")

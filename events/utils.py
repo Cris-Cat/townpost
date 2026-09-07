@@ -9,6 +9,10 @@ from datetime import date
 import datetime
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+import json
+from pathlib import Path
+from django.conf import settings
+
 
 def process_and_strip_exif(image_file):
     """
@@ -84,3 +88,38 @@ def get_past_months(num_months=6):
         months.append({'key': month_key, 'label': month_label})
         
     return months
+
+
+
+def get_location_data():
+    """
+    Reads data/locations.json and returns a list of countries 
+    and a map of cities for each country.
+    """
+    # This points to the 'data' folder next to your manage.py file
+    json_path = Path(settings.BASE_DIR) / 'data' / 'locations.json'
+    
+    # Debugging: Check if file exists
+    if not json_path.exists():
+        print(f"!!! ERROR: locations.json not found at {json_path}")
+        return [], {}
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            
+        country_choices = [('', 'Select a country')]
+        country_city_map = {}
+        
+        for item in data:
+            country_name = item.get('name')
+            cities = item.get('cities', [])
+            if country_name:
+                country_choices.append((country_name, country_name))
+                country_city_map[country_name] = cities
+                
+        return country_choices, country_city_map
+        
+    except Exception as e:
+        print(f"!!! ERROR reading JSON: {e}")
+        return [], {}
