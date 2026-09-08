@@ -36,8 +36,8 @@
                                 <div style="font-size: 0.85em; color: #4b5563;">📅 {{ event.start_date|date:"M j, Y" }}</div>
                             {% endif %}
                             <div style="font-size: 0.85em; color: #6b7280;">📂 {{ event.category }}</div>
-                            {% if event.city %}
-                                <div style="font-size: 0.85em; color: #6b7280;">📍 {{ event.city }}{% if event.country %}, {{ event.country }}{% endif %}</div>
+                            {% if event.country or event.city %}
+                                📍 {% if event.city %}{{ event.city }}, {% endif %}{{ event.country }}
                             {% endif %}
                         </div>
                     </div>
