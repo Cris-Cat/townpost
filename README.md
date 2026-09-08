@@ -13,7 +13,7 @@
 - **Location Filtering** — Filter events by Country and City using a lightweight JSON-based location system.
 - **Secure Image Handling** — Automatic EXIF data stripping, image resizing, and format conversion for privacy and performance.
 - **Spam Protection** — Integrated [Altcha](https://altcha.org/) CAPTCHA for all public forms.
-- **Passwordless Editing** — Users can edit their posts later using a secure, time-limited secret token sent via URL.
+- **Passwordless Editing** — Users can edit their posts later using a secure, time-limited secret token sent via URL.(expires in 5 days with 5 edit limit)
 
 ---
 
@@ -65,7 +65,7 @@ Make sure you have **Python 3.8+** and **pip** installed.
 ### 2. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/cityboard.git
+git clone https://github.com/Cris-Cat/townpost.git
 cd cityboard
 ```
 
@@ -144,6 +144,12 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 CityBoard relies heavily on the Django Admin panel for content moderation.
 
+To reset Admin password 
+Go to project folder in termainal and run 
+```
+python manage.py changepassword admin
+```
+
 ### Access Admin
 
 Go to [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/) and log in with your superuser credentials.
@@ -197,15 +203,11 @@ When a user uploads images, they are processed and saved in the `media/` directo
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions, issues, and feature requests are welcome!
 
-1. **Fork** the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a **Pull Request**
+
 
 ---
 
