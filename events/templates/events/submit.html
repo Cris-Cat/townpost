@@ -209,6 +209,10 @@
     const endDateContainer = document.getElementById('end-date-container');
     const startDateInput = document.getElementById('id_start_date');
     const endDateInput = document.getElementById('id_end_date');
+    
+    // --- NEW: Restrict Start Date to Today and Future ---
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.setAttribute('min', today);
 
     multiDayCheckbox.addEventListener('change', function() {
         if (this.checked) {
@@ -320,6 +324,7 @@
         closeModal();
         document.getElementById('hidden-submit-btn').click();
     }
+
 </script>
 
 <style>
@@ -327,5 +332,6 @@
         width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1em; box-sizing: border-box; background: #fff;
     }
     #id_description { background: #fffdf5; min-height: 120px; resize: vertical; }
+
 </style>
 {% endblock %}
