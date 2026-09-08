@@ -14,6 +14,10 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 import calendar
 from datetime import datetime, timedelta, date
+from .utils import get_location_data
+import json
+
+ 
 
 def home_view(request):
     view_type = request.GET.get('view', 'this_week')
@@ -21,7 +25,7 @@ def home_view(request):
     end_date_param = request.GET.get('end_date')
     month_param = request.GET.get('month')
     
-    # NEW: Custom Ribbon Filters
+    # Custom Ribbon Filters
     category_param = request.GET.get('category')
     from_date_param = request.GET.get('from_date')
     to_date_param = request.GET.get('to_date')
@@ -32,24 +36,58 @@ def home_view(request):
     
     title = "This Week's Events"
 
-    # 1. Base Query Logic
+    # 1. Get URL parameters for location
+    country = request.GET.get('country', '').strip()
+    city = request.GET.get('city', '').strip()
+    
+    # 2. Validate location if provided
+    if country or city:
+        _, city_map = get_location_data()
+        
+        # Check if the country exists in our JSON
+        if country and country not in city_map:
+            return render(request, 'events/location_error.html', {
+                'searched_country': country,
+                'searched_city': city
+            })
+            
+        # Check if the city exists for that country
+        if country and city and city not in city_map[country]:
+            return render(request, 'events/location_error.html', {
+                'searched_country': country,
+                'searched_city': city
+            })
+
+    # 3. Build the BASE queryset (Apply location filters HERE so they persist)
+    events_list = Event.objects.filter(status='approved')
+    
+    if country:
+        events_list = events_list.filter(country=country)
+    if city:
+        events_list = events_list.filter(city=city)
+
+    # 4. Apply View Type Logic (Chain onto the existing events_list)
     if view_type == 'all':
-        events_list = Event.objects.filter(status='approved').order_by('-is_pinned', '-created_at')
+        events_list = events_list.order_by('-is_pinned', '-created_at')
         title = "All Active Submissions"
         
     elif view_type == 'upcoming' and start_date_param and end_date_param:
-        s_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
-        e_date = datetime.strptime(end_date_param, '%Y-%m-%d').date() + timedelta(days=1)
-        events_list = Event.objects.filter(status='approved', start_date__gte=s_date, start_date__lt=e_date).order_by('-is_pinned', 'start_date')
-        title = f"Schedule: {s_date.strftime('%b %d')} – {(e_date - timedelta(days=1)).strftime('%b %d')}"
-        week_start, week_end = s_date, e_date - timedelta(days=1)
-        
+        try:
+            s_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
+            e_date = datetime.strptime(end_date_param, '%Y-%m-%d').date() + timedelta(days=1)
+            events_list = events_list.filter(start_date__gte=s_date, start_date__lt=e_date).order_by('-is_pinned', 'start_date')
+            title = f"Schedule: {s_date.strftime('%b %d')} – {(e_date - timedelta(days=1)).strftime('%b %d')}"
+            week_start, week_end = s_date, e_date - timedelta(days=1)
+        except ValueError:
+            events_list = Event.objects.none()
+            title = "Invalid Date Format"
+            
     elif view_type == 'past' and month_param:
         try:
             year, month = map(int, month_param.split('-'))
             first_day = date(year, month, 1)
             last_day = date(year, month, calendar.monthrange(year, month)[1])
-            events_list = Event.objects.filter(status='approved', created_at__date__gte=first_day, created_at__date__lte=last_day).order_by('-is_pinned', '-created_at')
+            events_list = events_list.filter(created_at__date__gte=first_day, created_at__date__lte=last_day).order_by('-is_pinned', '-created_at')
             title = f"Past Events: {first_day.strftime('%B %Y')}"
             week_start, week_end = first_day, last_day
         except Exception:
@@ -57,21 +95,19 @@ def home_view(request):
             title = "Invalid Month"
             
     else: # Default: This Week (by submission date)
-        events_list = Event.objects.filter(status='approved', created_at__date__gte=week_start, created_at__date__lte=week_end).order_by('-is_pinned', '-created_at')
+        events_list = events_list.filter(created_at__date__gte=week_start, created_at__date__lte=week_end).order_by('-is_pinned', '-created_at')
         title = f"This Week ({week_start.strftime('%b %d')}-{week_end.strftime('%d')})"
 
-    # 2. Apply Custom Ribbon Filters (Overrides date logic if dates are provided)
+    # 5. Apply Custom Ribbon Filters
     if category_param:
         events_list = events_list.filter(category__name__iexact=category_param)
         
     if from_date_param or to_date_param:
-        # If user uses the ribbon dates, we filter by EVENT date (start_date), not submission date
         if from_date_param:
             events_list = events_list.filter(start_date__gte=from_date_param)
         if to_date_param:
             events_list = events_list.filter(start_date__lte=to_date_param)
             
-        # Update title to reflect custom search
         title = "Custom Search Results"
         if from_date_param and to_date_param:
             title = f"Events from {from_date_param} to {to_date_param}"
@@ -112,10 +148,6 @@ def info_board_view(request):
     
     return render(request, 'events/info_board.html', {'events': events})
 
-import json
-from django.shortcuts import render, redirect
-from django.conf import settings
-# ... keep your other imports like EventForm, EventImage, process_and_strip_exif, verify_solution ...
 
 def submit_event_view(request):
     """
@@ -341,3 +373,44 @@ def terms_of_service_view(request):
     Terms of Service Page
     """
     return render(request, 'events/terms_of_service.html')
+
+def index(request):
+    country_param = request.GET.get('country')
+    city_param = request.GET.get('city')
+    
+    # Start with all approved events
+    events = Event.objects.filter(status='approved')
+    
+    # Apply country filter
+    if country_param:
+        events = events.filter(country__name=country_param)
+        
+        # Apply city filter only if country is selected
+        if city_param:
+            events = events.filter(city__name=city_param)
+    
+    # Get countries for the filter dropdown
+    countries = Country.objects.all().order_by('name')
+    
+    # Get cities for the selected country
+    cities = []
+    if country_param:
+        cities = City.objects.filter(country__name=country_param).order_by('name')
+    
+    # Convert cities to JSON for the JavaScript
+    import json
+    cities_dict = {}
+    for country in Country.objects.all():
+        cities_dict[country.name] = list(country.cities.values_list('name', flat=True))
+    cities_json = json.dumps(cities_dict)
+    
+    context = {
+        'events': events,
+        'countries': countries,
+        'cities': cities,
+        'selected_country': country_param,
+        'selected_city': city_param,
+        'cities_json': cities_json,
+    }
+    
+    return render(request, 'events/index.html', context)

@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'events.context_processors.sidebar_data', 
+                'events.context_processors.location_filter',
 
             ],
         },

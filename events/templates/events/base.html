@@ -46,7 +46,7 @@
 
         /* --- SIDEBAR (Thinner & No Collapse on Desktop) --- */
         .sidebar {
-            width: 160px; /* Made it much thinner */
+            width: 160px;
             background: rgba(255, 238, 183, 0.87);
             border-radius: 10px;
             padding: 13px;
@@ -54,16 +54,15 @@
             height: fit-content;
             position: sticky;
             top: 80px;
-            /* Removed transition and overflow hidden to keep it clean */
         }
 
         /* --- MOBILE SIDEBAR (Hidden by default, slides in) --- */
         @media (max-width: 768px) {
             .sidebar {
-                width: 250px; /* Wider when open on mobile for readability */
+                width: 250px;
                 position: fixed;
                 top: 0;
-                left: -100%; /* Hidden off-screen */
+                left: -100%;
                 height: 100vh;
                 z-index: 1000;
                 border-radius: 0;
@@ -71,9 +70,8 @@
                 overflow-y: auto;
             }
             
-            /* This class is added by Alpine when you click ☰ */
             .sidebar.open {
-                left: 0; /* Slides into view */
+                left: 0;
             }
         }
 
@@ -119,24 +117,8 @@
         .logo {
             font-size: 1.5em;
             font-weight: bold;
-            color: #000000;
+            color: #ffffff;
             text-decoration: none;
-        }
-
-        /* Filter Dropdown Row Styling */
-        .filter-dropdown {
-            background: rgba(255, 255, 255, 0.98);
-            padding: 15px 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            border-bottom: 1px solid #e5e7eb;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
         }
 
         @media (max-width: 768px) {
@@ -151,41 +133,121 @@
     </style>
 </head>
 
-<!-- Added showFilters: false to Alpine data -->
 <body x-data="{ mobileMenuOpen: false, sidebarCollapsed: false, showFilters: false }">
 
     <!-- HEADER -->
     <header class="top-bar">
         <div style="display: flex; align-items: center; gap: 15px;">
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" style="font-size: 1.3em; background: none; border: none; cursor: pointer; display: none;">☰</button>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()" style="font-size: 1.3em; background: none; border: none; cursor: pointer; display: none; color: white;">☰</button>
             <a href="{% url 'home' %}" class="logo">⾕CityBoard</a>
         </div>
         
         <!-- Buttons Group (Filter + Submit) -->
         <div style="display: flex; gap: 10px; align-items: center;">
-            <!-- NEW Filter Button (Exact same style as Submit) -->
             <button @click="showFilters = !showFilters" style="padding: 8px 20px; background: #f1c40f; color: #333; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95em;">
                 🔍 Filter
             </button>
             
-            <!-- Submit Button -->
             <a href="{% url 'submit' %}" style="padding: 8px 20px; background: #f1c40f; color: #333; text-decoration: none; border-radius: 6px; font-weight: bold;">+ Submit</a>
         </div>
     </header>
 
-    <!-- CENTERED FILTER BOX -->
+    <!-- LOCATION FILTER BANNER -->
+    {% block filter_banner %}
+    <!-- Location Filter Banner -->
+    <div x-data="{ showDropdowns: {% if request.GET.country or request.GET.city %}false{% else %}true{% endif %} }" style="background-color: #fcd363a1; border-bottom: 0px solid #e5e7eb; padding: 1rem 0;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem;">
+            
+            <!-- 1. Dropdowns View (Shown when showDropdowns is true) -->
+            <form x-show="showDropdowns" method="GET" action="{% url 'home' %}" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;">
+                <select name="country" id="filter-country" style="padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background-color: white;">
+                    <option value="">All Countries</option>
+                    {% for country in filter_countries %}
+                        <option value="{{ country }}" {% if request.GET.country == country %}selected{% endif %}>
+                            {{ country }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="city" id="filter-city" style="padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; background-color: white;" {% if not request.GET.country %}disabled{% endif %}>
+                    <option value="">All Cities</option>
+                    {% for city in filter_available_cities %}
+                        <option value="{{ city }}" {% if request.GET.city == city %}selected{% endif %}>
+                            {{ city }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" style="padding: 0.5rem 1rem; background-color: #2563eb; color: white; border: none; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s;">
+                    Apply Filter
+                </button>
+            </form>
+
+            <!-- 2. Active Filter View (Shown when showDropdowns is false) -->
+            <div x-show="!showDropdowns" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; width: 100%;">
+                <span style="color: #374151; font-weight: 500; font-size: 0.95rem;">
+                    <span style="font-weight: 700; color: #111827;">📍 Location:</span> 
+                    {% if request.GET.country %}
+                        {{ request.GET.country }}{% if request.GET.city %}, {{ request.GET.city }}{% endif %}
+                    {% else %}
+                        All Countries
+                    {% endif %}
+                </span>
+                
+                <button @click="showDropdowns = true" style="color: #2563eb; font-size: 0.875rem; font-weight: 500; text-decoration: underline; cursor: pointer; background: none; border: none;">
+                    Change location
+                </button>
+                
+                {% if request.GET.country or request.GET.city %}
+                    <a href="{% url 'home' %}" style="color: #dc2626; font-size: 0.875rem; font-weight: 500; text-decoration: underline;">
+                        Clear filter
+                    </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Keep the city dropdown logic working seamlessly
+        document.addEventListener('DOMContentLoaded', function() {
+            const countrySelect = document.getElementById('filter-country');
+            const citySelect = document.getElementById('filter-city');
+            const cityMap = {{ filter_city_map_json|safe }};
+
+            if (countrySelect && citySelect) {
+                countrySelect.addEventListener('change', function() {
+                    const selectedCountry = this.value;
+                    citySelect.innerHTML = '<option value="">All Cities</option>';
+                    
+                    if (selectedCountry && cityMap[selectedCountry]) {
+                        citySelect.disabled = false;
+                        cityMap[selectedCountry].forEach(city => {
+                            const option = document.createElement('option');
+                            option.value = city;
+                            option.textContent = city;
+                            citySelect.appendChild(option);
+                        });
+                    } else {
+                        citySelect.disabled = true;
+                    }
+                });
+            }
+        });
+    </script>
+    {% endblock %}
+
+    <!-- CENTERED FILTER BOX (Category & Dates) -->
     <div x-show="showFilters" 
          x-transition 
          style="background: transparent; padding: 15px 30px; display: flex; justify-content: center; border-bottom: 0px solid #e5e7eb;">
         
-        <!-- The "Small Box" Container -->
         <form action="{% url 'home' %}" method="GET" 
               style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; justify-content: center; 
                      background: #ffffff; padding: 15px 25px; border-radius: 8px; 
                      box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; 
                      max-width: 850px; width: 100%; margin: 0 auto;">
             
-            <!-- Category Dropdown -->
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-size: 0.9em; font-weight: 600; color: #333;">Category:</label>
                 <select name="category" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 0.9em; background: white; min-width: 160px;">
@@ -196,19 +258,16 @@
                 </select>
             </div>
             
-            <!-- From Date -->
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-size: 0.9em; font-weight: 600; color: #333;">From:</label>
                 <input type="date" name="from_date" value="{{ request.GET.from_date }}" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 0.9em;">
             </div>
             
-            <!-- To Date -->
             <div style="display: flex; align-items: center; gap: 8px;">
                 <label style="font-size: 0.9em; font-weight: 600; color: #333;">To:</label>
                 <input type="date" name="to_date" value="{{ request.GET.to_date }}" style="padding: 6px 12px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 0.9em;">
             </div>
 
-            <!-- Action Buttons -->
             <div style="display: flex; gap: 10px;">
                 <button type="submit" style="padding: 6px 16px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: 600;">Apply</button>
                 <a href="{% url 'home' %}" style="padding: 6px 16px; background: #e5e7eb; color: #333; text-decoration: none; border-radius: 4px; font-size: 0.9em; font-weight: 600; display: inline-flex; align-items: center;">Clear</a>
@@ -248,7 +307,7 @@
             else { if (btn) btn.style.display = 'none'; if (sidebar) sidebar.classList.remove('open'); }
         });
     </script>
-
+    
     <!-- FOOTER -->
     <footer style="background: rgba(31, 41, 55, 0.95); color: #d1d5db; padding: 40px 20px 20px 20px; margin-top: 40px;">
         <div style="max-width: 1200px; margin: 0 auto; text-align: center;">

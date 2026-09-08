@@ -13,7 +13,7 @@
     <!-- Expiry & Remaining Edits Info -->
     <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 25px; text-align: center;">
         <p style="margin: 0 0 5px 0; color: #333; font-size: 0.95em;">⏰ Edit link expires: <strong>{{ event.edit_token_expires_at|date:"M d, Y" }}</strong></p>
-        <p style="margin: 0; color: #333; font-size: 0.95em;">✏️ Remaining edits allowed: <strong style="color: #f1c40f;">{{ remaining_edits }}</strong></p>
+        <p style="margin: 0; color: #333; font-size: 0.95em;">✏️ Remaining edits allowed: <strong style="color: #000000;">{{ remaining_edits }}</strong></p>
     </div>
 
     <form method="POST" enctype="multipart/form-data" id="edit-form">
@@ -116,7 +116,16 @@
                     {{ form.city.errors }}
                 </div>
             </div>
-
+            <div style="margin-bottom: 15px;">
+                <label for="id_street_address" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.street_address.label }}</label>
+                {{ form.street_address }}
+                {{ form.street_address.errors }}
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="id_zip_code" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.zip_code.label }}</label>
+                {{ form.zip_code }}
+                {{ form.zip_code.errors }}
+            </div>
             <div style="margin-bottom: 15px;">
                 <label for="id_maps_url" style="font-weight: bold; display: block; margin-bottom: 5px; font-size: 0.9em;">{{ form.maps_url.label }}</label>
                 {{ form.maps_url }}

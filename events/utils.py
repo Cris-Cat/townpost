@@ -91,15 +91,16 @@ def get_past_months(num_months=6):
 
 
 
+
 def get_location_data():
     """
     Reads data/locations.json and returns a list of countries 
     and a map of cities for each country.
+    Handles both dictionary {"Country": ["City"]} and list [{"name": "Country", "cities": []}] formats.
     """
     # This points to the 'data' folder next to your manage.py file
     json_path = Path(settings.BASE_DIR) / 'data' / 'locations.json'
     
-    # Debugging: Check if file exists
     if not json_path.exists():
         print(f"!!! ERROR: locations.json not found at {json_path}")
         return [], {}
@@ -107,17 +108,25 @@ def get_location_data():
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-            
+        
         country_choices = [('', 'Select a country')]
         country_city_map = {}
         
-        for item in data:
-            country_name = item.get('name')
-            cities = item.get('cities', [])
-            if country_name:
+        # Handle the NEW format: {"Country": ["City1", "City2"]}
+        if isinstance(data, dict):
+            for country_name, cities in data.items():
                 country_choices.append((country_name, country_name))
                 country_city_map[country_name] = cities
                 
+        # Fallback for the OLD format: [{"name": "Country", "cities": ["City1"]}]
+        elif isinstance(data, list):
+            for item in data:
+                country_name = item.get('name')
+                cities = item.get('cities', [])
+                if country_name:
+                    country_choices.append((country_name, country_name))
+                    country_city_map[country_name] = cities
+                    
         return country_choices, country_city_map
         
     except Exception as e:

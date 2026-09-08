@@ -2,12 +2,12 @@
 <div style="display: flex; flex-direction: column; gap: 15px;">
 
     <!-- LIVE: This Week -->
-    <a href="{% url 'home' %}" class="nav-link {% if request.GET.view == 'this_week' or not request.GET.view %}active{% endif %}" style="font-weight: bold; background: #fef3c7;">
+    <a href="{% url 'home' %}{% if request.GET.country or request.GET.city %}?{% if request.GET.country %}country={{ request.GET.country }}{% endif %}{% if request.GET.country and request.GET.city %}&{% endif %}{% if request.GET.city %}city={{ request.GET.city }}{% endif %}{% endif %}" class="nav-link {% if request.GET.view == 'this_week' or not request.GET.view %}active{% endif %}" style="font-weight: bold; background: #fef3c7;">
         🔥 LIVE: This Week ({{ current_week_start|date:"M j" }}-{{ current_week_end|date:"j" }})
     </a>
 
     <!-- Notices Board -->
-    <a href="{% url 'info_board' %}" class="nav-link {% if request.path == '/info/' %}active{% endif %}" style="font-weight: bold; background: #ff07071e;">
+    <a href="{% url 'info_board' %}{% if request.GET.country or request.GET.city %}?{% if request.GET.country %}country={{ request.GET.country }}{% endif %}{% if request.GET.country and request.GET.city %}&{% endif %}{% if request.GET.city %}city={{ request.GET.city }}{% endif %}{% endif %}" class="nav-link {% if request.path == '/info/' %}active{% endif %}" style="font-weight: bold; background: #ff07071e;">
         📌 NOTICES BOARD
     </a>
 
@@ -17,7 +17,7 @@
     <div class="nav-title" style="font-size: 0.8em; color: #6b7280; text-transform: uppercase; margin-bottom: 5px;">📅 ACTIVE SCHEDULE</div>
     
     {% for monday, sunday in upcoming_weeks %}
-        <a href="?view=upcoming&start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}" 
+        <a href="?view=upcoming&start_date={{ monday|date:'Y-m-d' }}&end_date={{ sunday|date:'Y-m-d' }}{% if request.GET.country %}&country={{ request.GET.country }}{% endif %}{% if request.GET.city %}&city={{ request.GET.city }}{% endif %}" 
            class="nav-link {% if request.GET.view == 'upcoming' and request.GET.start_date == monday|date:'Y-m-d' %}active{% endif %}" 
            style="padding-left: 20px; font-size: 0.95em;">
            ▸ {{ monday|date:"M j" }} – {{ sunday|date:"M j" }}
@@ -28,7 +28,7 @@
     <div class="nav-title" style="font-size: 0.8em; color: #6b7280; text-transform: uppercase; margin: 15px 0 5px 0;">▼ Past Events</div>
     
     {% for month in past_months %}
-        <a href="?view=past&month={{ month.key }}" 
+        <a href="?view=past&month={{ month.key }}{% if request.GET.country %}&country={{ request.GET.country }}{% endif %}{% if request.GET.city %}&city={{ request.GET.city }}{% endif %}" 
            class="nav-link {% if request.GET.view == 'past' and request.GET.month == month.key %}active{% endif %}" 
            style="padding-left: 20px; font-size: 0.95em;">
            {{ month.label }}
@@ -38,7 +38,7 @@
     <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 15px 0;">
 
     <!-- Browse All -->
-    <a href="?view=all" class="nav-link {% if request.GET.view == 'all' %}active{% endif %}">
+    <a href="?view=all{% if request.GET.country %}&country={{ request.GET.country }}{% endif %}{% if request.GET.city %}&city={{ request.GET.city }}{% endif %}" class="nav-link {% if request.GET.view == 'all' %}active{% endif %}">
          🔎 Browse All active submissions
     </a>
 
