@@ -11,7 +11,14 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from the .env file
+load_dotenv(BASE_DIR / '.env')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-91z0)b$jye#j=wvl0l&kngejn_0bdgy40opk3*$_3&3n5yo#g5'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-key-for-dev-only')s
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -73,7 +80,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mycityboard.wsgi.application'
 
 # Altcha CAPTCHA Secret Key
-ALTCHA_HMAC_SECRET = '375df1dd13d00717512f7c3547c9698d04c4dcd12a4b19f4825b57fdca22f0ef'
+ALTCHA_HMAC_SECRET = os.environ.get('ALTCHA_HMAC_SECRET', '')
+
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 

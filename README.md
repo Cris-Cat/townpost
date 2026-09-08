@@ -14,6 +14,7 @@
 - **Secure Image Handling** — Automatic EXIF data stripping, image resizing, and format conversion for privacy and performance.
 - **Spam Protection** — Integrated [Altcha](https://altcha.org/) CAPTCHA for all public forms.
 - **Passwordless Editing** — Users can edit their posts later using a secure, time-limited secret token sent via URL.(expires in 5 days with 5 edit limit)
+- **Pinned Posts** Administrator can pin posts that will remain on top of page as per date submitted
 
 ---
 
