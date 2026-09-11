@@ -29,6 +29,10 @@
 | Image Processing | Pillow                                                 |
 
 ---
+## End User View
+![alt text](media/userview.png)
+## Admin View
+![alt text](media/admin-viewScreenshot.png)
 
 ## 📁 Folder Structure
 
